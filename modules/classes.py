@@ -95,6 +95,20 @@ class container:
     def getzDependency(self):
         pass
 
+    def getValuesasDict(self, valuetype):
+        retdict = {}
+        {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
+        if valuetype == "fullDetector":
+            retdict["Pix/Lay"] = [self.hitPix, self.hitPixPerModule, self.hitPixPerArea,
+                                  self.hitPixPerAreaSec, self.occupancies]
+            retdict["Pix/Det"] = [None, self.hitPixPerDet, self.hitPixPerDetArea,
+                                  self.hitPixPerDetAreaSec, self.Detoccupancies]
+            retdict["Clus/Lay"] = [self.hitClusters, self.hitClustersPerModule,
+                                   self.hitClustersPerArea , self.hitClustersPerAreaSec]
+            retdict["Clus/Det"] = [None, self.hitClustersPerDet,
+                                   self.hitClustersPerDetArea, self.hitClustersPerDetAreaSec]
+        return retdict
+
     def printValues(self):
         """
         Print base values for debugging

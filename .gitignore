@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# text and tables
+*.dat
+*.txt

@@ -7,7 +7,7 @@ from ConfigParser import SafeConfigParser
 import logging
 
 import modules.classes as classes
-
+import modules.output
 def getValuesPerLayer(n, nModules, collBunches, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
@@ -70,3 +70,5 @@ def occupancyFromFile(inputfile, collBunchesforRun):
     logging.debug("File location: {0}".format(inputfile))
     Resultcontainer = classes.container(filename, inputfile, collBunchesforRun)
     Resultcontainer.printValues()
+    #print modules.output.formatContainerFullPixelDetector(Resultcontainer)
+    modules.output.makeTabel(Resultcontainer)
