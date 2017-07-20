@@ -1,9 +1,9 @@
 def npixZdependency(inputfile):
 
-    print "Getting pixel per event per ladder"
+    print "Getting pixel per event per zpositions"
 
     facets = [12, 28, 44, 64]
-    ladder = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
+    zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     hpixdetMAPL1 = inputfile.Get("d/hpDetMap1")
     hpixdetMAPL2 = inputfile.Get("d/hpDetMap2")
@@ -12,14 +12,14 @@ def npixZdependency(inputfile):
 
     Histos2D = [hpixdetMAPL1, hpixdetMAPL2, hpixdetMAPL3, hpixdetMAPL4]
 
-    phitperladder = {"Layer1": None, "Layer2": None, "Layer3": None, "Layer4": None}
+    phitperzpositions = {"Layer1": None, "Layer2": None, "Layer3": None, "Layer4": None}
 
     for ih2D, h2D in enumerate(Histos2D):
         zvalDic = {}
-        for il, l in enumerate(ladder):
+        for il, l in enumerate(zpositions):
             pixelperL = 0
             for iface in range(facets[ih2D]):
-                # Ignore the "0" lines for facest and ladder
+                # Ignore the "0" lines for facest and zpositions
                 if iface < facets[ih2D]/2 and il <= 3:
                     x,y = 1,1
                 elif iface >= facets[ih2D]/2 and il <= 3:
@@ -32,8 +32,8 @@ def npixZdependency(inputfile):
                 #print "Events -> x: {0} | y: {1} ===> {2}".format(x+il, y+iface, pixelperL)
             zvalDic.update({l : pixelperL})
         #print zvalDic
-        phitperladder[layerNames[ih2D]] = zvalDic
-    return phitperladder
+        phitperzpositions[layerNames[ih2D]] = zvalDic
+    return phitperzpositions
 
 
 def main():

@@ -50,7 +50,7 @@ def main(args):
         #TODO Implement
     elif args.inputfile is not None and args.collBunch is not None:
         logger.info("Using file {0} and number of colliding bunches {1}".format(args.inputfile, args.collBunch))
-        #TODO Implement
+        modules.measurement.occupancyFromFile(args.inputfile, args.collBunch)
     else:
         pass
 if __name__ == "__main__":
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         "--collBunch",
         action = "store",
         help = "Colliding bunches for this fill",
-        type=str,
+        type=float,
         default = None,
     )
 

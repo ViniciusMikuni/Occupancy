@@ -1,17 +1,26 @@
+import logging
+
+from modules.tests import isHistoinFile
+
 def modulecounter(inputfile):
-
-    hpixdetMAPL1 = inputfile.Get("d/hpDetMap1")
-    hpixdetMAPL2 = inputfile.Get("d/hpDetMap2")
-    hpixdetMAPL3 = inputfile.Get("d/hpDetMap3")
-    hpixdetMAPL4 = inputfile.Get("d/hpDetMap4")
-
-    Histos2D = [hpixdetMAPL1, hpixdetMAPL2, hpixdetMAPL3, hpixdetMAPL4]
-
+    logging.info("Counting working modules")
+    nmodules =  {"Layer1": 96, "Layer2": 224, "Layer3": 352, "Layer4": 512}
     workingmodules = {"Layer1": None, "Layer2": None, "Layer3": None, "Layer4": None}
     lnames = ["Layer1", "Layer2", "Layer3", "Layer4"]
-    for ih2D, h2D in enumerate(Histos2D):
-        workingmodules[lnames[ih2D]] = getworkingmodulesfromHisto(h2D)
+    Histos2D = []
+    for ilayer, layer in enumerate(lnames):
+        currenthName = "d/hpDetMap{0}".format(ilayer+1)
+        if isHistoinFile(inputfile, currenthName):
+            Histos2D.append(inputfile.Get(currenthName))
+        else:
+            logging.warning("Histo for {1} {0} not found. Will set modules to standard value!".format(currenthName,layer))
+            Histos2D.append(None)
 
+    for ih2D, h2D in enumerate(Histos2D):
+        if h2D is not None:
+            workingmodules[lnames[ih2D]] = getworkingmodulesfromHisto(h2D)
+        else:
+            workingmodules[lnames[ih2D]] = nmodules[lnames[ih2D]]
     return workingmodules
 
 def getworkingmodulesfromHisto(hMap):
