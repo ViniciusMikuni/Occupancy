@@ -47,7 +47,8 @@ def main(args):
 
     if args.config is not None:
         logger.info("Using config set in arguments: {0}".format(args.config))
-        #TODO Implement
+        modules.measurement.occupancyFromConfig(args.config)
+
     elif args.inputfile is not None and args.collBunch is not None:
         logger.info("Using file {0} and number of colliding bunches {1}".format(args.inputfile, args.collBunch))
         modules.measurement.occupancyFromFile(args.inputfile, args.collBunch)

@@ -5,6 +5,7 @@ K. Schweiger, 2017
 """
 import logging
 import ROOT
+from copy import copy
 
 from modules.modulecounter import modulecounter
 from modules.tests import isHistoinFile
@@ -96,8 +97,7 @@ class container:
         pass
 
     def getValuesasDict(self, valuetype):
-        retdict = {}
-        {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
+        retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
         if valuetype == "fullDetector":
             retdict["Pix/Lay"] = [self.hitPix, self.hitPixPerModule, self.hitPixPerArea,
                                   self.hitPixPerAreaSec, self.occupancies]
@@ -108,6 +108,75 @@ class container:
             retdict["Clus/Det"] = [None, self.hitClustersPerDet,
                                    self.hitClustersPerDetArea, self.hitClustersPerDetAreaSec]
         return retdict
+    def getValuesasDetailDict(self, valuetype):
+        retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
+        if valuetype == "fullDetector":
+            retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModule,
+                                  "perArea" : self.hitPixPerArea,
+                                  "perAreaSec" : self.hitPixPerAreaSec,
+                                  "occupancy" : self.occupancies}
+            retdict["Pix/Det"] = {"perMod" : self.hitPixPerDet,
+                                  "perArea" : self.hitPixPerDetArea,
+                                  "perAreaSec" : self.hitPixPerDetAreaSec,
+                                  "occupancy" : self.Detoccupancies}
+            retdict["Clus/Lay"] = {"perMod" : self.hitClustersPerModule,
+                                   "perArea" : self.hitClustersPerArea,
+                                   "perAreaSec" : self.hitClustersPerAreaSec}
+            retdict["Clus/Det"] =  {"perMod" : self.hitClustersPerDet,
+                                    "perArea" : self.hitClustersPerDetArea,
+                                    "perAreaSec" : self.hitClustersPerDetAreaSec}
+        return retdict
+
+    def getValuesasDetailDict2(self, valuetype):
+        retdict = self.getValuesasDetailDict(valuetype)
+        if valuetype == "fullDetector":
+            retdict["Pix/Lay"].update({"nhit" : self.hitPix})
+            retdict["Pix/Det"].update({"nhit" : None})
+            retdict["Clus/Lay"].update({"nhit" : self.hitClusters})
+            retdict["Clus/Det"].update({"nhit" : None})
+        return retdict
+
+    def getValuesDetailDictperLayer(self, valuetype, layer = "Layer1"):
+        retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
+        if valuetype == "fullDetector":
+            retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModule[layer],
+                                  "nhit" : self.hitPix[layer],
+                                  "perArea" : self.hitPixPerArea[layer],
+                                  "perAreaSec" : self.hitPixPerAreaSec[layer],
+                                  "occupancy" : self.occupancies[layer]}
+            retdict["Pix/Det"] = {"perMod" : self.hitPixPerDet[layer],
+                                  "perArea" : self.hitPixPerDetArea[layer],
+                                  "perAreaSec" : self.hitPixPerDetAreaSec[layer],
+                                  "occupancy" : self.Detoccupancies[layer]}
+            retdict["Clus/Lay"] = {"perMod" : self.hitClustersPerModule[layer],
+                                   "perArea" : self.hitClustersPerArea[layer],
+                                   "nhit" : self.hitClusters[layer],
+                                   "perAreaSec" : self.hitClustersPerAreaSec[layer]}
+            retdict["Clus/Det"] =  {"perMod" : self.hitClustersPerDet[layer],
+                                    "perArea" : self.hitClustersPerDetArea[layer],
+                                    "perAreaSec" : self.hitClustersPerDetAreaSec[layer]}
+        return retdict
+
+    def getpdDataFrame(self, valuetype):
+        import pandas as pd
+        import numpy as np
+
+        returndict = {}
+        groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
+        subgroups = {"Pix/Lay" : ["nhit","perMod", "perArea", "perAreaSec", "occupancy"],
+                     "Pix/Det" : ["nhit","perMod", "perArea", "perAreaSec", "occupancy"],
+                     "Clus/Lay" : ["nhit","perMod", "perArea", "perAreaSec"],
+                     "Clus/Det" : ["nhit","perMod", "perArea", "perAreaSec"]}
+        valuedict = self.getValuesasDetailDict2(valuetype)
+        if valuetype == "fullDetector":
+            layerlist = self.LayerNames
+            for group in groups:
+                columns = pd.Series(subgroups[group])
+                a = pd.DataFrame(valuedict[group], index = layerlist)
+                a = a[subgroups[group]] #Sort columns by subgroup order
+                a.fillna(value=np.nan, inplace=True)
+                returndict[group] = copy(a)
+        return returndict
 
     def printValues(self):
         """

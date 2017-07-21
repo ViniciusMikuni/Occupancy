@@ -1,4 +1,11 @@
 # Occupancy
 
-Use this command to run current version:    
-`python measureOccupancy.py --logging=20 --inputfile=path/to/file --collBunch=1`
+Use    
+`python measureOccupancy.py --inputfile=path/to/file --collBunch=1`    
+or   
+`python measureOccupancy.py --config=configs/testconfig.cfg`
+
+## Requirements
+To run the code the following python modules are necessary:
+* __ROOT__ (pyROOT)
+* __pandas__ (dependencies (?): numpy, scipy, matplotlib)

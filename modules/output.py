@@ -7,6 +7,17 @@ import copy
 import logging
 from datetime import datetime
 
+def getDelimiters(fortype):
+    delimiter = ""
+    endline = ""
+    if fortype == "Markdown":
+        delimiter = "|"
+        endline = ""
+    elif fortype == "LaTeX":
+        delimiter = "&"
+        endline = "\\"
+    return delimiter, endline
+
 def formatContainerFullPixelDetector(container):
     """
     Returns dict for each data group. Each data group is a list of the columns. The columns are also lists.
@@ -31,15 +42,10 @@ def formatContainerFullPixelDetector(container):
     return formattedData
 
 def makeTabel(container, tabletype = "Markdown", Datatype = "fullDetector", outputname = "tableoutput"):
-    if tabletype == "Markdown":
-        delimiter = "|"
-        endline = ""
-    elif tabletype == "LaTeX":
-        delimiter = "&"
-        endline = "\\"
+    delimiter, endline = getDelimiters(tabletype)
     if Datatype == "fullDetector":
         data = formatContainerFullPixelDetector(container)
-    with open("outputname.dat", "w+") as f:
+    with open(outputname+".dat", "w+") as f:
         f.write("File created at: "+str(datetime.now())+"\n")
         for datacollection in data:
             f.write("\n "+str(datacollection)+"\n\n")
@@ -68,3 +74,39 @@ def makeTabel(container, tabletype = "Markdown", Datatype = "fullDetector", outp
                         f.write("----|----|----|----|----\n")
                     elif tabletype == "LaTeX":
                         f.write("\midrule\n")
+
+def makeRunComparisonTable(listofcontainers,
+                           tabletype = "Markdown", Datatype = "fullDetector", outputname = "tableoutput"):
+    delimiter, endline = getDelimiters(tabletype)
+    #TODO: compare one value in all layers for reach run
+    #TODO: compare all values of one datagroup for one layer
+    with open(outputname+".dat", "w+") as f:
+        f.write("File created at: "+str(datetime.now())+"\n")
+        for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
+            f.write("\n "+str(group)+"\n\n")
+            midrule = ""
+            if group.startswith("Pix"):
+                valuelist = ["perMod", "perArea", "perAreaSec", "occupancy"]
+                if tabletype == "Markdown":
+                    midrule = "----|----|----|----|----\n"
+            else:
+                valuelist = ["perMod", "perArea", "perAreaSec"]
+                if tabletype == "Markdown":
+                    midrule = "----|----|----|----\n"
+            for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
+                f.write("\n "+str(layer)+"\n\n")
+                for irun, runcontainerkey in enumerate(listofcontainers):
+                    runcontainer = listofcontainers[runcontainerkey]
+                    values = runcontainer.getValuesasDetailDict(Datatype)
+                    if irun == 0:
+                        firstline = str(layer)
+                        for val in valuelist:
+                            firstline = firstline + delimiter + val
+                        firstline = firstline + endline + "\n"
+                        f.write(firstline)
+                        f.write(midrule)
+                    line = str(runcontainer.name)
+                    for val in valuelist:
+                        line = line + delimiter + values[group][val]
+                    line = line + endline + "\n"
+                    f.write(line)

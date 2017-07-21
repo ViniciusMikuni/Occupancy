@@ -3,11 +3,12 @@ Main module for binging together all the steps needed for the occupancy measurem
 
 K. Schweiger, 2017
 """
-from ConfigParser import SafeConfigParser
+
 import logging
 
 import modules.classes as classes
 import modules.output
+import modules.pandasOutput
 def getValuesPerLayer(n, nModules, collBunches, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
@@ -57,6 +58,30 @@ def calculateCommonValues(nPerModule, collBunches, RevFrequ, ActiveModArea, Pixp
     perAreaSec = perArea * collBunches * RevFrequ
 
     return perArea, perAreaSec
+
+def occupancyFromConfig(config):
+    from ConfigParser import SafeConfigParser
+
+    logging.info("Processing config {0}".format(config))
+
+    cfg = SafeConfigParser()
+    cfg.read( config )
+
+    runstoProcess = cfg.sections()
+    logging.debug("Sections in config: {0}".format(runstoProcess))
+    Resultcontainers = {}
+    for run in runstoProcess:
+        logging.info("Processing section {1} from config {0}".format(config, run))
+        inputfile = cfg.get(run, "file")
+        collBunches = cfg.getfloat(run, "collidingBunches")
+        Resultcontainers[run] = classes.container(run, inputfile, collBunches)
+        #TODO: look for / and if there is one in outputname make subfolder and save .dat files there
+        modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
+        print Resultcontainers
+    #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
+    #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
+    modules.pandasOutput.makeHTMLfile(Resultcontainers, runstoProcess, "testing")
+        #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun):
     """
