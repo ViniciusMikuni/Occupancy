@@ -18,21 +18,22 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
-    runseries = pd.Series(runlist)
+    #runseries = pd.Series(runlist)
 
     slices = {}
     for name in layerNames:
         slices[name] = {}
         for group in groups:
             slices[name][group] = {}
-    for run in runseries:
+    for run in runlist:
+        #print run
         containerDF = containerlist[run].getpdDataFrame(datatype)
         for name in layerNames:
             for group in groups:
                 generalinfo = pd.Series([containerlist[run].nWorkingModules[name], containerlist[run].collBunches],
                                   index = ["nModules", "nBunches"])
                 slices[name][group].update({ run : generalinfo.append(containerDF[group].loc[name])})
-                print "slice[{0}][{1}] = \n{2}".format(name,group,slices[name][group][run])
+                #print "slice[{0}][{1}] = \n{2}".format(name,group,slices[name][group][run])
 
     for name in layerNames:
         #print "-----------"+name+"-----------"
@@ -41,6 +42,7 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
             #print "++++++++"+group+"++++++++"
             dataframes[name][group] = pd.DataFrame(slices[name][group]).transpose()
             #print dataframes[name][group]
+
 
     return dataframes
     #writeStringToFile(b.to_html(), "test.html")
@@ -64,7 +66,7 @@ def makeFullDetectorTables(containerlist, runlist, foldername = None):
     return runtables, runcomparisonperLayer
 
 
-def makeHTMLfile(containerlist, runlist, foldername):
+def makeHTMLfile(title, generaldescription, containerlist, runlist, foldername):
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
@@ -74,14 +76,16 @@ def makeHTMLfile(containerlist, runlist, foldername):
         os.makedirs(foldername)
 
     #HTML file with "Pix/Lay", "Pix/Det", "Clus/Lay" and "Clus/Det" tables for all layer and all processed runs
-    blocks = []
     header = "<!DOCTYPE html> \n <html> \n <body> \n"
-    blocks.append(header)
     style = "<style> \n table, th, td {\nborder: 1px solid black;\n border-collapse: collapse;\n}\nth, td { padding: 8px; }\n</style>\n"
+    title = "<h1>{0}</h1>{1}\n".format(title, generaldescription)
+    blocks = []
+    blocks.append(header)
     blocks.append(style)
+    blocks.append(title)
     for run in runlist:
-        block = "<hr>\n<h2>{0}</h2>\n{1}<br>\n".format(run, str(containerlist[run].comment))
-        block = block + "Working modules from hpDetMap:<br>"
+        block = "<hr>\n<h2>{0}</h2>\n{1}<br>\nDataset: {2}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].comments[1])
+        block = block + "Working modules (from hpDetMap):<br>"
         for layer in layerNames:
             block = block + "{0}: {1} modules<br>".format(layer, containerlist[run].nWorkingModules[layer])
         for group in groups:
@@ -95,7 +99,8 @@ def makeHTMLfile(containerlist, runlist, foldername):
         blocks = []
         blocks.append(header)
         blocks.append(style)
-        block = "<h2>Run comparion for {0}</h2>\n".format(layer)
+        blocks.append(title)
+        block = "<hr><h2>Run comparion for {0}</h2>\n".format(layer)
         for group in groups:
             block = block + "<hr>\n<h3>{0}</h3>\n{1}".format(group, runcomparisonperLayer[layer][group].to_html())
         blocks.append(block+"<br>\n")

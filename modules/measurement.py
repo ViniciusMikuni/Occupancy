@@ -66,22 +66,26 @@ def occupancyFromConfig(config):
 
     cfg = SafeConfigParser()
     cfg.read( config )
-
-    runstoProcess = cfg.sections()
+    
+    runstoProcess = cfg.sections()[1::] #Ignore General section
     logging.debug("Sections in config: {0}".format(runstoProcess))
     Resultcontainers = {}
+    generaldesc = cfg.get("General","description")
+    generaltitle = cfg.get("General","title")
+    foldername = cfg.get("General","foldername")
     for run in runstoProcess:
         logging.info("Processing section {1} from config {0}".format(config, run))
         inputfile = cfg.get(run, "file")
         collBunches = cfg.getfloat(run, "collidingBunches")
-        comment = cfg.get(run, "comment")
+        comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
+
         Resultcontainers[run] = classes.container(run, inputfile, collBunches, comment)
         #TODO: look for / and if there is one in outputname make subfolder and save .dat files there
-        modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
-        print Resultcontainers
+        #modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
+        #print Resultcontainers
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
-    modules.pandasOutput.makeHTMLfile(Resultcontainers, runstoProcess, "testing")
+    modules.pandasOutput.makeHTMLfile(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun):

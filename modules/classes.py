@@ -10,6 +10,7 @@ from copy import copy
 from modules.modulecounter import modulecounter
 from modules.tests import isHistoinFile
 import modules.measurement
+import modules.zdep
 
 
 class container:
@@ -17,11 +18,11 @@ class container:
     Container initialized for a run containing all claculations for the occupancy
     and related values.
     """
-    def __init__(self, name, inputfile, collBunches, comment = ""):
+    def __init__(self, name, inputfile, collBunches, comments = [""]):
         logging.debug("Initializing container for {0} with inputfile {1} and colliding bunches {2}".format(name, inputfile, collBunches))
         self.LayerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
         self.zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
-        self.comment = comment
+        self.comments = comments
         self.name = name
         self.file = ROOT.TFile.Open(inputfile)
         self.collBunches = collBunches
@@ -95,7 +96,9 @@ class container:
             self.hitClustersPerDetAreaSec[layer] = values["perAreaSec"]
 
     def getzDependency(self):
-        pass
+        nhitpixelsperZ, nworkingModulesperZ = modules.zdep.npixZdependency(self.file)
+
+
 
     def getValuesasDict(self, valuetype):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
