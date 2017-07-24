@@ -29,8 +29,10 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
         containerDF = containerlist[run].getpdDataFrame(datatype)
         for name in layerNames:
             for group in groups:
-                slices[name][group].update({ run : containerDF[group].loc[name]})
-
+                generalinfo = pd.Series([containerlist[run].nWorkingModules[name], containerlist[run].collBunches],
+                                  index = ["nModules", "nBunches"])
+                slices[name][group].update({ run : generalinfo.append(containerDF[group].loc[name])})
+                print "slice[{0}][{1}] = \n{2}".format(name,group,slices[name][group][run])
 
     for name in layerNames:
         #print "-----------"+name+"-----------"
@@ -78,7 +80,10 @@ def makeHTMLfile(containerlist, runlist, foldername):
     style = "<style> \n table, th, td {\nborder: 1px solid black;\n border-collapse: collapse;\n}\nth, td { padding: 8px; }\n</style>\n"
     blocks.append(style)
     for run in runlist:
-        block = "<hr>\n<h2>{0}</h2>\n".format(run)
+        block = "<hr>\n<h2>{0}</h2>\n{1}<br>\n".format(run, str(containerlist[run].comment))
+        block = block + "Working modules from hpDetMap:<br>"
+        for layer in layerNames:
+            block = block + "{0}: {1} modules<br>".format(layer, containerlist[run].nWorkingModules[layer])
         for group in groups:
             block = block + "<h3>{0}</h3>\n{1}".format(group, perRunTables[run][group].to_html())
         blocks.append(block+"<br>\n")
@@ -90,7 +95,7 @@ def makeHTMLfile(containerlist, runlist, foldername):
         blocks = []
         blocks.append(header)
         blocks.append(style)
-        block = "<hr>\n<h2>{0}</h2>\n".format(layer)
+        block = "<h2>Run comparion for {0}</h2>\n".format(layer)
         for group in groups:
             block = block + "<hr>\n<h3>{0}</h3>\n{1}".format(group, runcomparisonperLayer[layer][group].to_html())
         blocks.append(block+"<br>\n")

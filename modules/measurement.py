@@ -74,7 +74,8 @@ def occupancyFromConfig(config):
         logging.info("Processing section {1} from config {0}".format(config, run))
         inputfile = cfg.get(run, "file")
         collBunches = cfg.getfloat(run, "collidingBunches")
-        Resultcontainers[run] = classes.container(run, inputfile, collBunches)
+        comment = cfg.get(run, "comment")
+        Resultcontainers[run] = classes.container(run, inputfile, collBunches, comment)
         #TODO: look for / and if there is one in outputname make subfolder and save .dat files there
         modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
         print Resultcontainers
