@@ -2,12 +2,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import logging
 
 def writeStringToFile(string, filename):
+    logging.debug("Writing string to file: {0}".format(filename))
     with open(filename, "w+") as f:
         f.write(string)
 
 def writeListToFile(stringlist, filename):
+    logging.debug("Writing list of strings to file: {0}".format(filename))
     with open(filename, "w+") as f:
         for string in stringlist:
             f.write(string)
@@ -48,6 +51,7 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
     #writeStringToFile(b.to_html(), "test.html")
 
 def makeFullDetectorTables(containerlist, runlist, foldername = None):
+    logging.info("Getting pandas DF for full detector")
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
@@ -67,17 +71,25 @@ def makeFullDetectorTables(containerlist, runlist, foldername = None):
 
 
 def makeHTMLfile(title, generaldescription, containerlist, runlist, foldername):
+    logging.info("Processing runs and generate HTML files")
+    from ConfigParser import SafeConfigParser
+    styleconfig = SafeConfigParser()
+    logging.debug("Loading style config")
+    styleconfig.read("configs/style.cfg")
+
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
     perRunTables, runcomparisonperLayer = makeFullDetectorTables(containerlist, runlist)
 
     if not os.path.exists(foldername):
+        logging.info("Creating folder: {0}".format(foldername))
         os.makedirs(foldername)
 
-    #HTML file with "Pix/Lay", "Pix/Det", "Clus/Lay" and "Clus/Det" tables for all layer and all processed runs
+    logging.info("Generating HTML files")
+    #HTML file with "Pix/Lay", "Pix/Det", "Clus/Lay" and "Clus/Det" tables for all layer and all processed run
     header = "<!DOCTYPE html> \n <html> \n <body> \n"
-    style = "<style> \n table, th, td {\nborder: 1px solid black;\n border-collapse: collapse;\n}\nth, td { padding: 8px; }\n</style>\n"
+    style = "<style> \n table, th, td {{\nborder: {0} solid black;\n border-collapse: collapse;\n}}\nth, td {{ padding: {1}; }}\n</style>\n".format(styleconfig.get("Tables","bordersize"),styleconfig.get("Tables","padding"))
     title = "<h1>{0}</h1>{1}\n".format(title, generaldescription)
     blocks = []
     blocks.append(header)
@@ -89,7 +101,7 @@ def makeHTMLfile(title, generaldescription, containerlist, runlist, foldername):
         for layer in layerNames:
             block = block + "{0}: {1} modules<br>".format(layer, containerlist[run].nWorkingModules[layer])
         for group in groups:
-            block = block + "<h3>{0}</h3>\n{1}".format(group, perRunTables[run][group].to_html())
+            block = block + "<h3>{0}</h3>\n{1}".format(styleconfig.get("Renaming",group), perRunTables[run][group].to_html())
         blocks.append(block+"<br>\n")
     footer = "</body> \n </html> \n"
     blocks.append(footer)
@@ -102,7 +114,7 @@ def makeHTMLfile(title, generaldescription, containerlist, runlist, foldername):
         blocks.append(title)
         block = "<hr><h2>Run comparion for {0}</h2>\n".format(layer)
         for group in groups:
-            block = block + "<hr>\n<h3>{0}</h3>\n{1}".format(group, runcomparisonperLayer[layer][group].to_html())
+            block = block + "<hr>\n<h3>{0}</h3>\n{1}".format(styleconfig.get("Renaming",group), runcomparisonperLayer[layer][group].to_html())
         blocks.append(block+"<br>\n")
         blocks.append(footer)
         writeListToFile(blocks, "{0}/runComparison{1}.html".format(foldername, layer))

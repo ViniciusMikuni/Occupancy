@@ -54,6 +54,7 @@ def main(args):
         modules.measurement.occupancyFromFile(args.inputfile, args.collBunch)
     else:
         pass
+    logging.info("Finished script")
 if __name__ == "__main__":
     import argparse
     ##############################################################################################################

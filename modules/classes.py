@@ -6,6 +6,8 @@ K. Schweiger, 2017
 import logging
 import ROOT
 from copy import copy
+import os.path
+
 
 from modules.modulecounter import modulecounter
 from modules.tests import isHistoinFile
@@ -24,11 +26,17 @@ class container:
         self.zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
         self.comments = comments
         self.name = name
-        self.file = ROOT.TFile.Open(inputfile)
+        self.invalidFile = False
+        if not os.path.exists(inputfile.replace("~",os.path.expanduser("~"))):
+            logging.error("File {0} does not exist. Run will be ignored".format(inputfile))
+            self.invalidFile = True
+        else:
+            self.file = ROOT.TFile.Open(inputfile)
         self.collBunches = collBunches
 
         # Varaiable for full layer
-        self.nWorkingModules = modulecounter(self.file)
+        if not self.invalidFile:
+            self.nWorkingModules = modulecounter(self.file)
         #Pixels
         self.hitPix = {}
         self.occupancies = {}
@@ -51,10 +59,24 @@ class container:
         self.hitClustersPerDetAreaSec = {}
 
         # Set general values
-        self.getBaseValuesForallLayer()
+        if not self.invalidFile:
+            self.setBaseValuesForallLayer()
+
+        #Variables for z-dependency
+        self.nWorkingModulesZ = {}
+        #Pixels
+        self.hitPixZ = {}
+        self.occupanciesZ = {}
+        self.hitPixPerModuleZ = {}
+        self.hitPixPerAreaZ = {}
+        self.hitPixPerAreaSecZ = {}
+
+        # Set z-dependent values
+        if not self.invalidFile:
+            self.setzDependency()
 
 
-    def getBaseValuesForallLayer(self):
+    def setBaseValuesForallLayer(self):
         """
         Calculate for each layer:
             * Occupancy (Only for pixels)
@@ -62,8 +84,9 @@ class container:
             * Pixel/Cluster hit per cm^2
             * Pixel/Cluster hit per cm^2 per sec
         """
+        logging.info("Setting base values")
         for ilayer, layer in enumerate(self.LayerNames):
-            logging.info("Setting base values for {0}".format(layer))
+            logging.debug("Setting base values for {0}".format(layer))
             ############################################################################################
             # Pixels per Layer
             currentmean = getHistoMean(self.file, "d/hpixPerLay"+str(ilayer+1))
@@ -95,10 +118,25 @@ class container:
             self.hitClustersPerDetArea[layer] = values["perArea"]
             self.hitClustersPerDetAreaSec[layer] = values["perAreaSec"]
 
-    def getzDependency(self):
+    def setzDependency(self):
+        logging.info("Setting z-dependent values")
         nhitpixelsperZ, nworkingModulesperZ = modules.zdep.npixZdependency(self.file)
-
-
+        self.nWorkingModulesZ = nworkingModulesperZ
+        for layer in self.LayerNames:
+            logging.debug("z-dependent values for {0}".format(layer))
+            self.hitPixZ[layer] = {}
+            self.occupanciesZ[layer] = {}
+            self.hitPixPerModuleZ[layer] = {}
+            self.hitPixPerAreaZ[layer] = {}
+            self.hitPixPerAreaSecZ[layer] = {}
+            for pos in self.zpositions:
+                logging.debug("{0} - position {1}".format(layer, pos))
+                values = modules.measurement.getValuesPerLayer(nhitpixelsperZ[layer][pos], nworkingModulesperZ[layer][pos], self.collBunches)
+                self.hitPixZ[layer][pos] = nhitpixelsperZ[layer][pos]
+                self.occupanciesZ[layer][pos] = values["Occ"]
+                self.hitPixPerModuleZ[layer][pos] = values["perMod"]
+                self.hitPixPerAreaZ[layer][pos] = values["perArea"]
+                self.hitPixPerAreaSecZ[layer][pos] = values["perAreaSec"]
 
     def getValuesasDict(self, valuetype):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}

@@ -5,6 +5,7 @@ K. Schweiger, 2017
 """
 
 import logging
+from copy import copy
 
 import modules.classes as classes
 import modules.output
@@ -22,12 +23,15 @@ def getValuesPerLayer(n, nModules, collBunches, isCluster = False,
 
     returns dict with keys: PixpMod, PixpArea, PixpAreaSec, Occ
     """
+    logging.debug("calculateing per layer with {0}, {1}, {2}".format(n, nModules, collBunches))
+
 
     perMod = n / float(nModules)
     perArea, perAreaSec = calculateCommonValues(perMod, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
     occupancy = None
     if not isCluster:
+        logging.debug("isCluster is set to False: Occupancy calculation")
         occupancy =  perMod / PixperMod
 
     return {"perMod" : perMod, "perArea" : perArea, "perAreaSec" : perAreaSec, "Occ" : occupancy}
@@ -44,11 +48,13 @@ def getValuesPerDet(nperDet, collBunches, isCluster = False,
 
     returns dict with keys: PixpMod, PixpArea, PixpAreaSec, Occ
     """
+    logging.debug("calculateing per Det with {0}, {1}".format(nperDet, collBunches))
 
     perArea, perAreaSec = calculateCommonValues(nperDet, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
     occupancy = None
     if not isCluster:
+        logging.debug("isCluster is set to False: Occupancy calculation")
         occupancy =  nperDet / PixperMod
 
     return {"perMod" : nperDet, "perArea" : perArea, "perAreaSec" : perAreaSec, "Occ" : occupancy}
@@ -66,7 +72,7 @@ def occupancyFromConfig(config):
 
     cfg = SafeConfigParser()
     cfg.read( config )
-    
+
     runstoProcess = cfg.sections()[1::] #Ignore General section
     logging.debug("Sections in config: {0}".format(runstoProcess))
     Resultcontainers = {}
@@ -79,8 +85,12 @@ def occupancyFromConfig(config):
         collBunches = cfg.getfloat(run, "collidingBunches")
         comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
 
-        Resultcontainers[run] = classes.container(run, inputfile, collBunches, comment)
-        #TODO: look for / and if there is one in outputname make subfolder and save .dat files there
+        container = classes.container(run, inputfile, collBunches, comment)
+        if not container.invalidFile:
+            Resultcontainers[run] = copy(container)
+        else:
+            runstoProcess.remove(run)
+        del container
         #modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
         #print Resultcontainers
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
