@@ -10,13 +10,14 @@ from copy import copy
 import modules.classes as classes
 import modules.output
 import modules.pandasOutput
-def getValuesPerLayer(n, nModules, collBunches, isCluster = False,
+def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
     Function for calculating mean values per Layer:
     * hit pixel/cluster per module
     * hit pixel/cluster per area [cm^-2]
     * hit pixel/cluster par area rate [cm^-2 s^-1]
+    * hit pixel/cluster par area rate normalized to inst. Lumi per bunch corossing
     * occupancy
 
     Set isCluster to True if used for cluster because occupancy can ne be measured.
@@ -29,19 +30,23 @@ def getValuesPerLayer(n, nModules, collBunches, isCluster = False,
     perMod = n / float(nModules)
     perArea, perAreaSec = calculateCommonValues(perMod, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
+    perAreaSecNorm = perAreaSec / lumi / collBunches
+
     occupancy = None
     if not isCluster:
         logging.debug("isCluster is set to False: Occupancy calculation")
         occupancy =  perMod / PixperMod
 
-    return {"perMod" : perMod, "perArea" : perArea, "perAreaSec" : perAreaSec, "Occ" : occupancy}
+    return {"perMod" : perMod, "Occ" : occupancy,
+            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm}
 
-def getValuesPerDet(nperDet, collBunches, isCluster = False,
+def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
                     RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560):
     """
     Function for calculating mean values per Det/Module:
     * hit pixel/cluster per area [cm^-2]
     * hit pixel/cluster par area rate [cm^-2 s^-1]
+    * hit pixel/cluster par area rate normalized to inst. Lumi per bunch corossing
     * occupancy
 
     Set isCluster to True if used for cluster because occupancy can ne be measured.
@@ -52,12 +57,15 @@ def getValuesPerDet(nperDet, collBunches, isCluster = False,
 
     perArea, perAreaSec = calculateCommonValues(nperDet, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
+    perAreaSecNorm = perAreaSec / lumi / collBunches
+
     occupancy = None
     if not isCluster:
         logging.debug("isCluster is set to False: Occupancy calculation")
         occupancy =  nperDet / PixperMod
 
-    return {"perMod" : nperDet, "perArea" : perArea, "perAreaSec" : perAreaSec, "Occ" : occupancy}
+    return {"perMod" : nperDet, "Occ" : occupancy,
+            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm}
 
 def calculateCommonValues(nPerModule, collBunches, RevFrequ, ActiveModArea, PixperMod):
     perArea = nPerModule / float(ActiveModArea)
@@ -83,9 +91,10 @@ def occupancyFromConfig(config):
         logging.info("Processing section {1} from config {0}".format(config, run))
         inputfile = cfg.get(run, "file")
         collBunches = cfg.getfloat(run, "collidingBunches")
+        instLumi =  cfg.getfloat(run, "lumi")
         comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
 
-        container = classes.container(run, inputfile, collBunches, comment)
+        container = classes.container(run, inputfile, collBunches, instLumi, comment)
         if not container.invalidFile:
             Resultcontainers[run] = copy(container)
         else:
@@ -98,7 +107,7 @@ def occupancyFromConfig(config):
     modules.pandasOutput.makeHTMLfile(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
-def occupancyFromFile(inputfile, collBunchesforRun):
+def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
     """
     Calculate occupency and related values from a preprocesst file containing
     the nescessary histograms
@@ -108,7 +117,7 @@ def occupancyFromFile(inputfile, collBunchesforRun):
     filename = inputfile.split("/")[-1].split(".")[0]
     logging.info("Processing file: {0}".format(filename))
     logging.debug("File location: {0}".format(inputfile))
-    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun)
+    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun, instLumi)
     Resultcontainer.printValues()
     #print modules.output.formatContainerFullPixelDetector(Resultcontainer)
     modules.output.makeTabel(Resultcontainer)

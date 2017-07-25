@@ -33,8 +33,10 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
         containerDF = containerlist[run].getpdDataFrame(datatype)
         for name in layerNames:
             for group in groups:
-                generalinfo = pd.Series([containerlist[run].nWorkingModules[name], containerlist[run].collBunches],
-                                  index = ["nModules", "nBunches"])
+                generalinfo = pd.Series([containerlist[run].nWorkingModules[name],
+                                         containerlist[run].collBunches,
+                                         containerlist[run].instLumi],
+                                        index = ["nModules", "nBunches", "instLumi"])
                 slices[name][group].update({ run : generalinfo.append(containerDF[group].loc[name])})
                 #print "slice[{0}][{1}] = \n{2}".format(name,group,slices[name][group][run])
 
