@@ -23,13 +23,12 @@ The configs used for config mode need to contain a __General__ section and one o
 * __description__  will be displayed as subtitle in the output HTML file
 * __foldername__ is used as name of the folder containing the output files. If not present it will be created
 
-
-    [RunName]
-    collidingBunches=float/int
-    lumi=float
-    file=string
-    comment=string
-    dataset=string
+        [RunName]
+        collidingBunches=float/int
+        lumi=float
+        file=string
+        comment=string
+        dataset=string
 
 * __RunName__ is a unique name used the index the runs and is displayed as name in the output tables
 * __collidingBunches__ and __lumi__ are used for calculations and can be obtained form WBM. __lumi__ is the average inst. luminosity in the considered LS range in e30 cm^-2 s^-1.
