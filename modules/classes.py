@@ -132,6 +132,26 @@ class container:
         logging.info("Setting z-dependent values")
         nhitpixelsperZ, nworkingModulesperZ = modules.zdep.npixZdependency(self.file)
         self.nWorkingModulesZ = nworkingModulesperZ
+
+        for pos in self.zpositions:
+            self.hitPixZ[pos] = {}
+            self.occupanciesZ[pos] = {}
+            self.hitPixPerModuleZ[pos] = {}
+            self.hitPixPerAreaZ[pos] = {}
+            self.hitPixPerAreaSecZ[pos] = {}
+            self.hitPixPerAreaSecNormZ[pos] = {}
+            for layer in self.LayerNames:
+                logging.debug("{0} - position {1}".format(layer, pos))
+                values = modules.measurement.getValuesPerLayer(nhitpixelsperZ[layer][pos], nworkingModulesperZ[layer][pos], self.collBunches)
+                self.hitPixZ[pos][layer] = nhitpixelsperZ[layer][pos]
+                self.occupanciesZ[pos][layer] = values["Occ"]
+                self.hitPixPerModuleZ[pos][layer] = values["perMod"]
+                self.hitPixPerAreaZ[pos][layer] = values["perArea"]
+                self.hitPixPerAreaSecZ[pos][layer] = values["perAreaSec"]
+                self.hitPixPerAreaSecNormZ[pos][layer]= values["perAreaSecNorm"]
+
+        """
+        Inverse structure. Maybe needed later at some point
         for layer in self.LayerNames:
             logging.debug("z-dependent values for {0}".format(layer))
             self.hitPixZ[layer] = {}
@@ -149,7 +169,7 @@ class container:
                 self.hitPixPerAreaZ[layer][pos] = values["perArea"]
                 self.hitPixPerAreaSecZ[layer][pos] = values["perAreaSec"]
                 self.hitPixPerAreaSecNormZ[layer][pos] = values["perAreaSecNorm"]
-
+        """
     def getValuesasDict(self, valuetype):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
         if valuetype == "fullDetector":
@@ -162,7 +182,7 @@ class container:
             retdict["Clus/Det"] = [None, self.hitClustersPerDet,
                                    self.hitClustersPerDetArea, self.hitClustersPerDetAreaSec, self.hitClustersPerDetAreaSecNorm]
         return retdict
-    def getValuesasDetailDict(self, valuetype):
+    def getValuesasDetailDict(self, valuetype, part = None):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
         if valuetype == "fullDetector":
             retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModule,
@@ -183,15 +203,58 @@ class container:
                                     "perArea" : self.hitClustersPerDetArea,
                                     "perAreaSec" : self.hitClustersPerDetAreaSec,
                                     "perAreaSecNorm" : self.hitClustersPerDetAreaSecNorm}
+        elif valuetype == "partialDetector":
+            if part in self.zpositions:
+                retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModuleZ[part],
+                                      "perArea" : self.hitPixPerAreaZ[part],
+                                      "perAreaSec" : self.hitPixPerAreaSecZ[part],
+                                      "perAreaSecNorm" : self.hitPixPerAreaSecNormZ[part],
+                                      "occupancy" : self.occupanciesZ[part]}
+                """
+                Not implemented yet
+                retdict["Pix/Det"] = {"perMod" : self.hitPixPerDetZ[part],
+                                      "perArea" : self.hitPixPerDetAreaZ[part],
+                                      "perAreaSec" : self.hitPixPerDetAreaSecZ[part],
+                                      "perAreaSecNorm" : self.hitPixPerDetAreaSecNormZ[part],
+                                      "occupancy" : self.Detoccupancies}
+                retdict["Clus/Lay"] = {"perMod" : self.hitClustersPerModuleZ[part],
+                                       "perArea" : self.hitClustersPerAreaZ[part],
+                                       "perAreaSec" : self.hitClustersPerAreaSecZ[part],
+                                       "perAreaSecNorm" : self.hitClustersPerAreaSecNormZ[part]}
+                retdict["Clus/Det"] =  {"perMod" : self.hitClustersPerDetZ[part],
+                                        "perArea" : self.hitClustersPerDetAreaZ[part],
+                                        "perAreaSec" : self.hitClustersPerDetAreaSecZ[part],
+                                        "perAreaSecNorm" : self.hitClustersPerDetAreaSecNormZ[part]}
+                """
         return retdict
 
-    def getValuesasDetailDict2(self, valuetype):
-        retdict = self.getValuesasDetailDict(valuetype)
+    def getValuesasDetailDict2(self, valuetype, part = None):
+        """
+        Returns dictionary with values for Pix/Lay, Pix/Det, Clus/Lay, Clus/Det for each layer.
+        If valuetype is not fullDetector it is parsed and if supported a dictionary with the same
+        structure but with the defined criteria applied is returned.
+        """
+        retdict = None
         if valuetype == "fullDetector":
+            retdict = self.getValuesasDetailDict(valuetype)
             retdict["Pix/Lay"].update({"nhit" : self.hitPix})
             retdict["Pix/Det"].update({"nhit" : None})
             retdict["Clus/Lay"].update({"nhit" : self.hitClusters})
             retdict["Clus/Det"].update({"nhit" : None})
+        if valuetype.startswith("partialDetector"):
+            if valuetype.startswith("partialDetectorZ"):
+                position = part
+                if position in self.zpositions:
+                    retdict = self.getValuesasDetailDict("partialDetector", position)
+                    retdict["Pix/Lay"].update({"nhit" : self.hitPixZ[position]})
+                    """
+                    Not implemented yet
+                    retdict["Pix/Det"].update({"nhit" : None})
+                    retdict["Clus/Lay"].update({"nhit" : self.hitClusters})
+                    retdict["Clus/Det"].update({"nhit" : None})
+                    """
+                else:
+                    logging.warning("Valuetype {0} in no valid argument for z-dependent values".format(valuetype))
         return retdict
 
     def getValuesDetailDictperLayer(self, valuetype, layer = "Layer1"):
@@ -220,6 +283,7 @@ class container:
         return retdict
 
     def getpdDataFrame(self, valuetype):
+        logging.debug("Generating pandas DF with valuetype: {0}".format(valuetype))
         import pandas as pd
         import numpy as np
 
@@ -229,14 +293,26 @@ class container:
                      "Pix/Det" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm", "occupancy"],
                      "Clus/Lay" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm"],
                      "Clus/Det" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm"]}
-        valuedict = self.getValuesasDetailDict2(valuetype)
+        layerlist = self.LayerNames
         if valuetype == "fullDetector":
-            layerlist = self.LayerNames
+            valuedict = self.getValuesasDetailDict2(valuetype)
             for group in groups:
-                columns = pd.Series(subgroups[group])
-                a = pd.DataFrame(valuedict[group], index = layerlist)
-                a = a[subgroups[group]] #Sort columns by subgroup order
-                a.fillna(value=np.nan, inplace=True)
+                if valuetype == "fullDetector":
+                    a = pd.DataFrame(valuedict[group], index = layerlist)
+                    a = a[subgroups[group]] #Sort columns by subgroup order
+                    a.fillna(value=np.nan, inplace=True)
+                    returndict[group] = copy(a)
+
+        elif valuetype.startswith("partialDetectorZ"):
+            returndict = {}
+            #for group in groups:
+            for group in ["Pix/Lay"]: #necessary fir current implementation of z-dependency
+                mulitcolumnstuples = [(x,y) for x in self.zpositions for y in subgroups[group]]
+                mulitcolumns = pd.MultiIndex.from_tuples(mulitcolumnstuples, names=['position', 'value'])
+                a = pd.DataFrame(index = self.LayerNames, columns = mulitcolumns)
+                for position in self.zpositions:
+                    valuedict = self.getValuesasDetailDict2(valuetype, position)
+                    a[position] = pd.DataFrame(valuedict[group], index = layerlist)
                 returndict[group] = copy(a)
         return returndict
 
