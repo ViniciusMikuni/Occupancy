@@ -10,6 +10,7 @@ from copy import copy
 import modules.classes as classes
 import modules.output
 import modules.pandasOutput
+import modules.htmlOutput
 def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
@@ -30,7 +31,7 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
     perMod = n / float(nModules)
     perArea, perAreaSec = calculateCommonValues(perMod, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
-    perAreaSecNorm = perAreaSec / lumi / collBunches
+    perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
     if not isCluster:
@@ -57,7 +58,7 @@ def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
 
     perArea, perAreaSec = calculateCommonValues(nperDet, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
-    perAreaSecNorm = perAreaSec / lumi / collBunches
+    perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
     if not isCluster:
@@ -104,7 +105,10 @@ def occupancyFromConfig(config):
         #print Resultcontainers
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
-    modules.pandasOutput.makeHTMLfile(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
+    modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
+    generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername)
+    modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername)
+
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
