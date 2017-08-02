@@ -49,9 +49,9 @@ def main(args):
         logger.info("Using config set in arguments: {0}".format(args.config))
         modules.measurement.occupancyFromConfig(args.config)
 
-    elif args.inputfile is not None and args.collBunch is not None and args.instLumi is not None:
+    elif args.inputfile is not None and args.collBunch is not None and args.instLumi is not None and args.nLS is not None:
         logger.info("Using file {0} and number of colliding bunches {1}".format(args.inputfile, args.collBunch))
-        modules.measurement.occupancyFromFile(args.inputfile, args.collBunch, args.instLumi)
+        modules.measurement.occupancyFromFile(args.inputfile, args.collBunch, args.instLumi, args.nLS )
     else:
         pass
     logging.info("Finished script")
@@ -120,9 +120,17 @@ if __name__ == "__main__":
         default = None,
     )
 
+    argumentparser.add_argument(
+        "--nLS",
+        action = "store",
+        help = "Number of lumi sections",
+        type=float,
+        default = None,
+    )
+
     args = argumentparser.parse_args()
 
-    if args.config is None and (args.inputfile is None and args.collBunch is None and args.instLumi is None):
+    if args.config is None and (args.inputfile is None and args.collBunch is None and args.instLumi is None and args.nLS is None):
         print "Either set config or inputfile and colliding bunches"
         exit()
     #

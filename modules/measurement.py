@@ -11,7 +11,7 @@ import modules.classes as classes
 import modules.output
 import modules.pandasOutput
 import modules.htmlOutput
-def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
+def getValuesPerLayer(n, nModules, collBunches, lumi = 1, nLS = 1, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
     Function for calculating mean values per Layer:
@@ -32,7 +32,7 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
     perArea, perAreaSec = calculateCommonValues(perMod, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
 
-    perAreaNorm = perArea / (lumi / collBunches)
+    perAreaNorm = ( perArea / (lumi / collBunches) ) / (nLS * 23.31)
     perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
@@ -43,7 +43,7 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
     return {"perMod" : perMod, "Occ" : occupancy,
             "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm, "perAreaNorm" : perAreaNorm}
 
-def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
+def getValuesPerDet(nperDet, collBunches, lumi = 1, nLS = 1, isCluster = False,
                     RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560):
     """
     Function for calculating mean values per Det/Module:
@@ -60,7 +60,7 @@ def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
 
     perArea, perAreaSec = calculateCommonValues(nperDet, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
-    perAreaNorm = perArea / (lumi / collBunches)
+    perAreaNorm = ( perArea / (lumi / collBunches) ) / (nLS * 23.31)
     perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
@@ -100,9 +100,10 @@ def occupancyFromConfig(config):
             inputfile = ""
         collBunches = cfg.getfloat(run, "collidingBunches")
         instLumi =  cfg.getfloat(run, "lumi")
+        nLS =  cfg.getfloat(run, "nLS")
         comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
 
-        container = classes.container(run, inputfile, collBunches, instLumi, comment)
+        container = classes.container(run, inputfile, collBunches, instLumi, nLS, comment)
         if not container.invalidFile:
             Resultcontainers[run] = copy(container)
         else:
@@ -120,7 +121,7 @@ def occupancyFromConfig(config):
 
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
-def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
+def occupancyFromFile(inputfile, collBunchesforRun, instLumi, nLS):
     """
     Calculate occupency and related values from a preprocesst file containing
     the nescessary histograms
@@ -130,7 +131,7 @@ def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
     filename = inputfile.split("/")[-1].split(".")[0]
     logging.info("Processing file: {0}".format(filename))
     logging.debug("File location: {0}".format(inputfile))
-    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun, instLumi)
+    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun, instLumi, nLS)
     Resultcontainer.printValues()
     #print modules.output.formatContainerFullPixelDetector(Resultcontainer)
     modules.output.makeTabel(Resultcontainer)

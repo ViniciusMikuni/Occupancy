@@ -20,11 +20,12 @@ class container:
     Container initialized for a run containing all claculations for the occupancy
     and related values.
     """
-    def __init__(self, name, inputfile, collBunches, instLumi, comments = [""]):
+    def __init__(self, name, inputfile, collBunches, instLumi, nLS,  comments = [""]):
         logging.debug("Initializing container for {0} with inputfile {1} and colliding bunches {2}".format(name, inputfile, collBunches))
         self.LayerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
         self.zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
         self.instLumi = instLumi * 1e30
+        self.nLumiSections = nLS
         self.comments = comments
         self.name = name
         self.invalidFile = False
@@ -102,7 +103,7 @@ class container:
             # Pixels per Layer
             currentmean = getHistoMean(self.file, "d/hpixPerLay"+str(ilayer+1))
             self.hitPix[layer] = currentmean
-            values = modules.measurement.getValuesPerLayer(currentmean, self.nWorkingModules[layer], self.collBunches, self.instLumi)
+            values = modules.measurement.getValuesPerLayer(currentmean, self.nWorkingModules[layer], self.collBunches, self.instLumi, self.nLumiSections)
             self.occupancies[layer] = values["Occ"]
             self.hitPixPerModule[layer] = values["perMod"]
             self.hitPixPerArea[layer] = values["perArea"]
@@ -111,7 +112,7 @@ class container:
             self.hitPixPerAreaSecNorm[layer] = values["perAreaSecNorm"]
             # Pixels per Det
             currentmean = getHistoMean(self.file, "d/hpixPerDet"+str(ilayer+1))
-            values = modules.measurement.getValuesPerDet(currentmean, self.collBunches, self.instLumi)
+            values = modules.measurement.getValuesPerDet(currentmean, self.collBunches, self.instLumi, self.nLumiSections)
             self.Detoccupancies[layer] = values["Occ"]
             self.hitPixPerDet[layer] = values["perMod"]
             self.hitPixPerDetArea[layer] = values["perArea"]
@@ -121,7 +122,7 @@ class container:
             ############################################################################################
             # Clusters per Layer
             currentmean = getHistoMean(self.file, "d/hclusPerLay"+str(ilayer+1))
-            values = modules.measurement.getValuesPerLayer(currentmean, self.nWorkingModules[layer],self.collBunches, self.instLumi,  True)
+            values = modules.measurement.getValuesPerLayer(currentmean, self.nWorkingModules[layer],self.collBunches, self.instLumi, self.nLumiSections,  True)
             self.hitClusters[layer] = currentmean
             self.hitClustersPerModule[layer] = values["perMod"]
             self.hitClustersPerArea[layer] = values["perArea"]
@@ -130,7 +131,7 @@ class container:
             self.hitClustersPerAreaSecNorm[layer] = values["perAreaSecNorm"]
             # CLusters per Det
             currentmean = getHistoMean(self.file, "d/hclusPerDet"+str(ilayer+1))
-            values = modules.measurement.getValuesPerDet(currentmean, self.collBunches, self.instLumi, True)
+            values = modules.measurement.getValuesPerDet(currentmean, self.collBunches, self.instLumi, self.nLumiSections, True)
             self.hitClustersPerDet[layer] = values["perMod"] #In this case: The mean given to the function
             self.hitClustersPerDetArea[layer] = values["perArea"]
             self.hitClustersPerDetAreaSec[layer] = values["perAreaSec"]
