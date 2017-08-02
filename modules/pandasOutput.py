@@ -118,12 +118,18 @@ def makeRunComparisonPlots(containerlist, runlist, foldername):
                                                               runcompperlayer["Layer4"]['Pix/Lay']["occupancy"]],
                                                              ["Layer1","Layer2","Layer3","Layer4"], "{0}Occupancy_allLayers".format(prefix),
                                                              foldername = foldername, yTitle = r"Occupancy"))
-    generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer["Layer1"]['Pix/Lay']["perAreaSecNorm"],
-                                                              runcompperlayer["Layer2"]['Pix/Lay']["perAreaSecNorm"],
-                                                              runcompperlayer["Layer3"]['Pix/Lay']["perAreaSecNorm"],
-                                                              runcompperlayer["Layer4"]['Pix/Lay']["perAreaSecNorm"]],
-                                                             ["Layer1","Layer2","Layer3","Layer4"], "{0}perAreaSecNorm_allLayers".format(prefix),
-                                                             foldername = foldername, yTitle = r"perAreaSecNorm"))
+    generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer["Layer1"]['Pix/Lay']["perAreaNorm"],
+                                                              runcompperlayer["Layer2"]['Pix/Lay']["perAreaNorm"],
+                                                              runcompperlayer["Layer3"]['Pix/Lay']["perAreaNorm"],
+                                                              runcompperlayer["Layer4"]['Pix/Lay']["perAreaNorm"]],
+                                                             ["Layer1","Layer2","Layer3","Layer4"], "{0}perAreaNorm_allLayers".format(prefix),
+                                                             foldername = foldername, yTitle = r"perAreaNorm"))
+    generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer["Layer1"]['Pix/Lay']["perAreaSec"],
+                                                              runcompperlayer["Layer2"]['Pix/Lay']["perAreaSec"],
+                                                              runcompperlayer["Layer3"]['Pix/Lay']["perAreaSec"],
+                                                              runcompperlayer["Layer4"]['Pix/Lay']["perAreaSec"]],
+                                                             ["Layer1","Layer2","Layer3","Layer4"], "{0}perAreaSec_allLayers".format(prefix),
+                                                             foldername = foldername, yTitle = r"hits"))
     generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer["Layer1"]['Pix/Lay']["perArea"],
                                                               runcompperlayer["Layer2"]['Pix/Lay']["perArea"],
                                                               runcompperlayer["Layer3"]['Pix/Lay']["perArea"],
@@ -133,11 +139,11 @@ def makeRunComparisonPlots(containerlist, runlist, foldername):
     #Run comparisons
 
     for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
-        normrate = runcompperlayer[layer]['Pix/Lay']["perAreaSecNorm"]
+        normrate = runcompperlayer[layer]['Pix/Lay']["perAreaNorm"]
         lumiperbx = runcompperlayer[layer]['Pix/Lay']["instLumi"]/runcompperlayer["Layer1"]['Pix/Lay']["nBunches"]
 
-        generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'perAreaSecNorm', lumiperbx, r'LumiperBX [cm$^{-2}$s$^{-1}$]',
-                                                               "{0}perAreaSecNorm{1}".format(prefix, layer), layer, foldername))
+        generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'perAreaNorm', lumiperbx, r'LumiperBX [cm$^{-2}$s$^{-1}$]',
+                                                               "{0}perAreaNorm{1}".format(prefix, layer), layer, foldername))
 
         generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer]['Pix/Lay']["occupancy"], r"Occupancy",
                                                                lumiperbx, r'LumiperBX [cm$^{-2}$s$^{-1}$]',

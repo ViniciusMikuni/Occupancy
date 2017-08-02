@@ -31,6 +31,8 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
     perMod = n / float(nModules)
     perArea, perAreaSec = calculateCommonValues(perMod, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
+
+    perAreaNorm = perArea / (lumi / collBunches)
     perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
@@ -39,7 +41,7 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
         occupancy =  perMod / PixperMod
 
     return {"perMod" : perMod, "Occ" : occupancy,
-            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm}
+            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm, "perAreaNorm" : perAreaNorm}
 
 def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
                     RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560):
@@ -58,6 +60,7 @@ def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
 
     perArea, perAreaSec = calculateCommonValues(nperDet, collBunches, RevFrequ, ActiveModArea, PixperMod)
 
+    perAreaNorm = perArea / (lumi / collBunches)
     perAreaSecNorm = perAreaSec / (lumi / collBunches)
 
     occupancy = None
@@ -66,7 +69,7 @@ def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
         occupancy =  nperDet / PixperMod
 
     return {"perMod" : nperDet, "Occ" : occupancy,
-            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm}
+            "perArea" : perArea, "perAreaSec" : perAreaSec, "perAreaSecNorm" : perAreaSecNorm, "perAreaNorm" : perAreaNorm}
 
 def calculateCommonValues(nPerModule, collBunches, RevFrequ, ActiveModArea, PixperMod):
     perArea = nPerModule / float(ActiveModArea)
@@ -79,7 +82,7 @@ def occupancyFromConfig(config):
 
     logging.info("Processing config {0}".format(config))
 
-    cfg = SafeConfigParser()
+    cfg = SafeConfigParser(allow_no_value=True)
     cfg.read( config )
 
     runstoProcess = cfg.sections()[1::] #Ignore General section
@@ -88,9 +91,13 @@ def occupancyFromConfig(config):
     generaldesc = cfg.get("General","description")
     generaltitle = cfg.get("General","title")
     foldername = cfg.get("General","foldername")
+    invalidruns = []
     for run in runstoProcess:
         logging.info("Processing section {1} from config {0}".format(config, run))
-        inputfile = cfg.get(run, "file")
+        if cfg.get(run, "file") is not None:
+            inputfile = cfg.get(run, "file")
+        else:
+            inputfile = ""
         collBunches = cfg.getfloat(run, "collidingBunches")
         instLumi =  cfg.getfloat(run, "lumi")
         comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
@@ -99,10 +106,12 @@ def occupancyFromConfig(config):
         if not container.invalidFile:
             Resultcontainers[run] = copy(container)
         else:
-            runstoProcess.remove(run)
+            invalidruns.append(run)
         del container
         #modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
         #print Resultcontainers
+    for run in invalidruns:
+        runstoProcess.remove(run)
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
     modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)

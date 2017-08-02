@@ -44,23 +44,27 @@ class container:
         self.hitPixPerModule = {}
         self.hitPixPerArea = {}
         self.hitPixPerAreaSec = {}
+        self.hitPixPerAreaNorm = {}
         self.hitPixPerAreaSecNorm = {}
 
         self.Detoccupancies = {}
         self.hitPixPerDet = {}
         self.hitPixPerDetArea = {}
         self.hitPixPerDetAreaSec = {}
+        self.hitPixPerDetAreaNorm = {}
         self.hitPixPerDetAreaSecNorm = {}
         # Clusters
         self.hitClusters = {}
         self.hitClustersPerModule = {}
         self.hitClustersPerArea = {}
         self.hitClustersPerAreaSec = {}
+        self.hitClustersPerAreaNorm = {}
         self.hitClustersPerAreaSecNorm = {}
 
         self.hitClustersPerDet = {}
         self.hitClustersPerDetArea = {}
         self.hitClustersPerDetAreaSec = {}
+        self.hitClustersPerDetAreaNorm = {}
         self.hitClustersPerDetAreaSecNorm = {}
 
         # Set general values
@@ -75,6 +79,7 @@ class container:
         self.hitPixPerModuleZ = {}
         self.hitPixPerAreaZ = {}
         self.hitPixPerAreaSecZ = {}
+        self.hitPixPerAreaNormZ = {}
         self.hitPixPerAreaSecNormZ = {}
 
         # Set z-dependent values
@@ -102,6 +107,7 @@ class container:
             self.hitPixPerModule[layer] = values["perMod"]
             self.hitPixPerArea[layer] = values["perArea"]
             self.hitPixPerAreaSec[layer] = values["perAreaSec"]
+            self.hitPixPerAreaNorm[layer] = values["perAreaNorm"]
             self.hitPixPerAreaSecNorm[layer] = values["perAreaSecNorm"]
             # Pixels per Det
             currentmean = getHistoMean(self.file, "d/hpixPerDet"+str(ilayer+1))
@@ -110,6 +116,7 @@ class container:
             self.hitPixPerDet[layer] = values["perMod"]
             self.hitPixPerDetArea[layer] = values["perArea"]
             self.hitPixPerDetAreaSec[layer] = values["perAreaSec"]
+            self.hitPixPerDetAreaNorm[layer] = values["perAreaNorm"]
             self.hitPixPerDetAreaSecNorm[layer] = values["perAreaSecNorm"]
             ############################################################################################
             # Clusters per Layer
@@ -119,6 +126,7 @@ class container:
             self.hitClustersPerModule[layer] = values["perMod"]
             self.hitClustersPerArea[layer] = values["perArea"]
             self.hitClustersPerAreaSec[layer] = values["perAreaSec"]
+            self.hitClustersPerAreaNorm[layer] = values["perAreaNorm"]
             self.hitClustersPerAreaSecNorm[layer] = values["perAreaSecNorm"]
             # CLusters per Det
             currentmean = getHistoMean(self.file, "d/hclusPerDet"+str(ilayer+1))
@@ -126,6 +134,7 @@ class container:
             self.hitClustersPerDet[layer] = values["perMod"] #In this case: The mean given to the function
             self.hitClustersPerDetArea[layer] = values["perArea"]
             self.hitClustersPerDetAreaSec[layer] = values["perAreaSec"]
+            self.hitClustersPerDetAreaNorm[layer] = values["perAreaNorm"]
             self.hitClustersPerDetAreaSecNorm[layer] = values["perAreaSecNorm"]
 
     def setzDependency(self):
@@ -139,6 +148,7 @@ class container:
             self.hitPixPerModuleZ[pos] = {}
             self.hitPixPerAreaZ[pos] = {}
             self.hitPixPerAreaSecZ[pos] = {}
+            self.hitPixPerAreaNormZ[pos] = {}
             self.hitPixPerAreaSecNormZ[pos] = {}
             for layer in self.LayerNames:
                 logging.debug("{0} - position {1}".format(layer, pos))
@@ -148,6 +158,7 @@ class container:
                 self.hitPixPerModuleZ[pos][layer] = values["perMod"]
                 self.hitPixPerAreaZ[pos][layer] = values["perArea"]
                 self.hitPixPerAreaSecZ[pos][layer] = values["perAreaSec"]
+                self.hitPixPerAreaNormZ[pos][layer]= values["perAreaNorm"]
                 self.hitPixPerAreaSecNormZ[pos][layer]= values["perAreaSecNorm"]
 
         """
@@ -174,13 +185,13 @@ class container:
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
         if valuetype == "fullDetector":
             retdict["Pix/Lay"] = [self.hitPix, self.hitPixPerModule, self.hitPixPerArea,
-                                  self.hitPixPerAreaSec,self.hitPixPerAreaSecnorm, self.occupancies]
+                                  self.hitPixPerAreaSec,self.hitPixPerAreaNorm, self.occupancies]
             retdict["Pix/Det"] = [None, self.hitPixPerDet, self.hitPixPerDetArea,
-                                  self.hitPixPerDetAreaSec,self.hitPixPerDetAreaSecNorm, self.Detoccupancies]
+                                  self.hitPixPerDetAreaSec,self.hitPixPerDetAreaNorm, self.Detoccupancies]
             retdict["Clus/Lay"] = [self.hitClusters, self.hitClustersPerModule,
-                                   self.hitClustersPerArea, self.hitClustersPerAreaSec, self.hitClustersPerAreaSecNorm]
+                                   self.hitClustersPerArea, self.hitClustersPerAreaSec, self.hitClustersPerAreaNorm]
             retdict["Clus/Det"] = [None, self.hitClustersPerDet,
-                                   self.hitClustersPerDetArea, self.hitClustersPerDetAreaSec, self.hitClustersPerDetAreaSecNorm]
+                                   self.hitClustersPerDetArea, self.hitClustersPerDetAreaSec, self.hitClustersPerDetAreaNorm]
         return retdict
     def getValuesasDetailDict(self, valuetype, part = None):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
@@ -188,27 +199,27 @@ class container:
             retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModule,
                                   "perArea" : self.hitPixPerArea,
                                   "perAreaSec" : self.hitPixPerAreaSec,
-                                  "perAreaSecNorm" : self.hitPixPerAreaSecNorm,
+                                  "perAreaNorm" : self.hitPixPerAreaNorm,
                                   "occupancy" : self.occupancies}
             retdict["Pix/Det"] = {"perMod" : self.hitPixPerDet,
                                   "perArea" : self.hitPixPerDetArea,
                                   "perAreaSec" : self.hitPixPerDetAreaSec,
-                                  "perAreaSecNorm" : self.hitPixPerDetAreaSecNorm,
+                                  "perAreaNorm" : self.hitPixPerDetAreaNorm,
                                   "occupancy" : self.Detoccupancies}
             retdict["Clus/Lay"] = {"perMod" : self.hitClustersPerModule,
                                    "perArea" : self.hitClustersPerArea,
                                    "perAreaSec" : self.hitClustersPerAreaSec,
-                                   "perAreaSecNorm" : self.hitClustersPerAreaSecNorm}
+                                   "perAreaNorm" : self.hitClustersPerAreaNorm}
             retdict["Clus/Det"] =  {"perMod" : self.hitClustersPerDet,
                                     "perArea" : self.hitClustersPerDetArea,
                                     "perAreaSec" : self.hitClustersPerDetAreaSec,
-                                    "perAreaSecNorm" : self.hitClustersPerDetAreaSecNorm}
+                                    "perAreaNorm" : self.hitClustersPerDetAreaNorm}
         elif valuetype == "partialDetector":
             if part in self.zpositions:
                 retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModuleZ[part],
                                       "perArea" : self.hitPixPerAreaZ[part],
                                       "perAreaSec" : self.hitPixPerAreaSecZ[part],
-                                      "perAreaSecNorm" : self.hitPixPerAreaSecNormZ[part],
+                                      "perAreaNorm" : self.hitPixPerAreaNormZ[part],
                                       "occupancy" : self.occupanciesZ[part]}
                 """
                 Not implemented yet
@@ -264,22 +275,22 @@ class container:
                                   "nhit" : self.hitPix[layer],
                                   "perArea" : self.hitPixPerArea[layer],
                                   "perAreaSec" : self.hitPixPerAreaSec[layer],
-                                  "perAreaSecNorm" : self.hitPixPerAreaSecNorm[layer],
+                                  "perAreaNorm" : self.hitPixPerAreaNorm[layer],
                                   "occupancy" : self.occupancies[layer]}
             retdict["Pix/Det"] = {"perMod" : self.hitPixPerDet[layer],
                                   "perArea" : self.hitPixPerDetArea[layer],
                                   "perAreaSec" : self.hitPixPerDetAreaSec[layer],
-                                  "perAreaSecNorm" : self.hitPixPerDetAreaSecNorm[layer],
+                                  "perAreaNorm" : self.hitPixPerDetAreaNorm[layer],
                                   "occupancy" : self.Detoccupancies[layer]}
             retdict["Clus/Lay"] = {"perMod" : self.hitClustersPerModule[layer],
                                    "perArea" : self.hitClustersPerArea[layer],
                                    "nhit" : self.hitClusters[layer],
                                    "perAreaSec" : self.hitClustersPerAreaSec[layer],
-                                   "perAreaSecNorm" : self.hitClustersPerAreaSecNorm[layer]}
+                                   "perAreaNorm" : self.hitClustersPerAreaNorm[layer]}
             retdict["Clus/Det"] =  {"perMod" : self.hitClustersPerDet[layer],
                                     "perArea" : self.hitClustersPerDetArea[layer],
                                     "perAreaSec" : self.hitClustersPerDetAreaSec[layer],
-                                    "perAreaSecNorm" : self.hitClustersPerDetAreaSecNorm[layer]}
+                                    "perAreaNorm" : self.hitClustersPerDetAreaNorm[layer]}
         return retdict
 
     def getpdDataFrame(self, valuetype):
@@ -289,10 +300,10 @@ class container:
 
         returndict = {}
         groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
-        subgroups = {"Pix/Lay" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm", "occupancy"],
-                     "Pix/Det" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm", "occupancy"],
-                     "Clus/Lay" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm"],
-                     "Clus/Det" : ["nhit","perMod", "perArea", "perAreaSec","perAreaSecNorm"]}
+        subgroups = {"Pix/Lay" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec", "occupancy"],
+                     "Pix/Det" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec", "occupancy"],
+                     "Clus/Lay" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec"],
+                     "Clus/Det" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec"]}
         layerlist = self.LayerNames
         if valuetype == "fullDetector":
             valuedict = self.getValuesasDetailDict2(valuetype)
