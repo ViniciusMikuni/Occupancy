@@ -69,7 +69,8 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
     base.tick_params(axis='y', colors=color1)
     second.tick_params(axis='y', colors=color2)
     if isRunComp:
-        base.set_xticklabels(base.xaxis.get_majorticklabels(), rotation=45)
+        base.set_xticks(range(len(df1.index.values.tolist())))
+        base.set_xticklabels(["{0}".format(item) for item in df1.index.values.tolist()], rotation=45)
 
     path = makefolder(foldername)
     if filename is None:
@@ -119,7 +120,8 @@ def makecomparionPlot(dfs, titles, filename, colors = ["Default"], plottitle = "
         dftuple[0].plot(ax = base, color = dftuple[2], label = dftuple[1])
 
     if isRunComp:
-        base.set_xticklabels(base.xaxis.get_majorticklabels(), rotation=45)
+        base.set_xticks(range(len(dfs[0].index.values.tolist())))
+        base.set_xticklabels(["{0}".format(item) for item in dfs[0].index.values.tolist()], rotation=45)
 
     base.get_yaxis().get_major_formatter().set_powerlimits((-3, 5))
 

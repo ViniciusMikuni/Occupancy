@@ -29,7 +29,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
     blocks.append(style)
     blocks.append(title)
     for run in runlist:
-        block = "<hr>\n<h2>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1])
+        block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1],run.replace(" ","_"))
         block = block + "Working modules (from hpDetMap):<br>"
         for layer in layerNames:
             block = block + "{0}: {1} modules<br>".format(layer, containerlist[run].nWorkingModules[layer])
@@ -61,7 +61,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
         blocks.append(style)
         blocks.append("<h1>{0} - z-dependency</h1>{1}\n<br><b>{2} ({3})</b>".format(titlestring, generaldescription, styleconfig.get("Renaming", group), group))
         for run in runlist:
-            block = "<hr>\n<h2>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1])
+            block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1], run.replace(" ","_"))
             for layer in layerNames:
                 block = block + "<h3>{0}</h3>\n{1}".format(layer, perRunTables[run][group][layer].to_html())
             blocks.append(block+"<br>\n")
@@ -70,7 +70,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
 
 
 
-def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlist, foldername):
+def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlist, foldername, midfix = "Pix/Lay"):
     """
     Make overview page (subpages) for plot generated with modules.pandasOutput.makeRunComparisonPlots.
 
@@ -90,29 +90,77 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     blocks.append(header)
     blocks.append(title)
     blocks.append("<h2>Comparison of rate and occupancy of all layer for each processed run</h2>\n")
+    runsadded = 0
     for run in runlist:
-        blocks.append("<hr>\n<h3>{0}</h3>\n".format(run))
+        runblock = []
+        nfiles = 0
+        runblock.append("<hr>\n<h3 id={1}>{0}</h3>\n".format(run, run.replace(" ","_")))
         for plot in generatedplots:
             filename = plot.split("/")[-1].split(".")[0]
             if run.split(" ")[1] in filename:
-                blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+                nfiles += 1
+                runblock.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+        if nfiles > 0:
+            blocks = blocks + runblock
+            runsadded += 1
     blocks.append(footer)
-    modules.pandasOutput.writeListToFile(blocks, "{0}/plots_perRun.html".format(foldername))
+    if runsadded > 0:
+        modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_perRun.html".format(foldername, midfix.replace("/","per")))
+    logging.info("Saved: {0}/plots_{1}_perRun.html".format(foldername, midfix.replace("/","per")))
 
     blocks = []
     blocks.append(header)
     blocks.append(title)
     blocks.append("<h2>Run comparison</h2>\n")
-    blocks.append("<hr>\n<h3>Plots for all layers</h3>\n")
+    blocks.append("<hr>\n<h3 id=allLayers>Plots for all layers</h3>\n")
     for plot in generatedplots:
         filename = plot.split("/")[-1].split(".")[0]
         if "allLayers" in filename:
             blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
     for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
-        blocks.append("<hr>\n<h3>Plots for {0}</h3>\n".format(layer))
+        blocks.append("<hr>\n<h3 id={0}>Plots for {0}</h3>\n".format(layer))
         for plot in generatedplots:
             filename = plot.split("/")[-1].split(".")[0]
             if layer in filename:
                 blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
     blocks.append(footer)
-    modules.pandasOutput.writeListToFile(blocks, "{0}/plots_runComp.html".format(foldername))
+    modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
+    logging.info("Saved: {0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
+
+def makeLandingPage(titlestring, generatedplots, runlist, foldername ):
+    header = "<!DOCTYPE html> \n <html> \n <body> \n"
+    title = "<h1>{0}</h1>\n".format(titlestring)
+    footer = "</body> \n </html> \n"
+    blocks = []
+    blocks.append(header)
+    blocks.append(title)
+    subheaderperRun = "<h2> Per run monitoring</h2>\n"
+    fullDettableref = "Full Detector: Tabels for runs: "
+    zDeptableref = "<br>Z-depencdency: Tabels for runs: "
+    zDepPlotref = "<br><br>Z-depencdency: Plots for runs: "
+    for run in runlist:
+        fullDettableref += "<a href=perRunTables.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
+        zDeptableref += "<a href=zDependencyPixperLay.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
+        zDepPlotref += "<a href=plots_PixperLay_perRun.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
+    fullDettableref += "\n"
+    zDeptableref += "(calculated from pixels hit per layer)\n"
+    zDepPlotref += "(calculated from pixels hit per layer)\n"
+    blocks.append(subheaderperRun)
+    blocks.append(fullDettableref)
+    blocks.append(zDeptableref)
+    blocks.append(zDepPlotref)
+
+    subheaderRunComp = "<h2>Run comparion</h2>\n"
+    fullDettablerefcomp = "Full detector: Tables for: <a href=runComparisonLayer1.html>Layer 1</a> <a href=runComparisonLayer2.html>Layer 2</a> <a href=runComparisonLayer3.html>Layer 3</a> <a href=runComparisonLayer4.html>Layer 4</a><br> \n"
+    fullDetplotPixPerLayrefcomp = "Full detector: Plots for <a href=plots_PixperLay_runComp.html#allLayers>all Layers</a>, <a href=plots_PixperLay_runComp.html#Layer1>Layer 1</a>, <a href=plots_PixperLay_runComp.html#Layer2>Layer 2</a>, <a href=plots_PixperLay_runComp.html#Layer3>Layer 3</a>, <a href=plots_PixperLay_runComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per layer</mark>)<br>\n"
+    fullDetplotPixPerDetrefcomp = "Full detector: Plots for <a href=plots_PixperDet_runComp.html#allLayers>all Layers</a>, <a href=plots_PixperDet_runComp.html#Layer1>Layer 1</a>, <a href=plots_PixperDet_runComp.html#Layer2>Layer 2</a>, <a href=plots_PixperDet_runComp.html#Layer3>Layer 3</a>, <a href=plots_PixperDet_runComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per det</mark>)<br>\n"
+    fullDetplotClusPerLayrefcomp = "Full detector: Plots for <a href=plots_ClusperLay_runComp.html#allLayers>all Layers</a>, <a href=plots_ClusperLay_runComp.html#Layer1>Layer 1</a>, <a href=plots_ClusperLay_runComp.html#Layer2>Layer 2</a>, <a href=plots_ClusperLay_runComp.html#Layer3>Layer 3</a>, <a href=plots_ClusperLay_runComp.html#Layer4>Layer 4</a> (calculated from <mark>clusters hit per layer</mark>)<br>\n"
+    fullDetplotClusPerDetrefcomp = "Full detector: Plots for <a href=plots_ClusperDet_runComp.html#allLayers>all Layers</a>, <a href=plots_ClusperDet_runComp.html#Layer1>Layer 1</a>, <a href=plots_ClusperDet_runComp.html#Layer2>Layer 2</a>, <a href=plots_ClusperDet_runComp.html#Layer3>Layer 3</a>, <a href=plots_ClusperDet_runComp.html#Layer4>Layer 4</a> (calculated from <mark>clusters hit per det</mark>)<br>\n"
+    blocks.append(subheaderRunComp)
+    blocks.append(fullDettablerefcomp)
+    blocks.append(fullDetplotPixPerLayrefcomp)
+    blocks.append(fullDetplotPixPerDetrefcomp)
+    blocks.append(fullDetplotClusPerLayrefcomp)
+    blocks.append(fullDetplotClusPerDetrefcomp)
+    blocks.append(footer)
+    modules.pandasOutput.writeListToFile(blocks, "{0}/index.html".format(foldername))

@@ -115,9 +115,11 @@ def occupancyFromConfig(config):
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
     modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
-    generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername)
-    modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername)
-
+    for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
+        generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)
+        print generatedfiles
+        modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername, group)
+    modules.htmlOutput.makeLandingPage(generaltitle, generatedfiles, runstoProcess, foldername)
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
