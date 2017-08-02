@@ -11,7 +11,7 @@ The following python modules are necessary:
 * __ROOT__ (pyROOT)
 * __pandas__ (dependencies (?): numpy, scipy, matplotlib)
 
-_Note:_ If run on the T3@PSI using some versions of CMSSW (e.g. 8_0_26) results in crash because matplotlib can not be correctly improrted.
+_Note:_ If run on the T3@PSI using some versions of CMSSW (e.g. 8_0_26) results in crash because matplotlib can not be correctly imported.
 
 ## Config description
 The configs used for config mode need to contain a __General__ section and one or more __Run__ sections:

@@ -74,7 +74,7 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
     path = makefolder(foldername)
     if filename is None:
         filename = "plot_{0}_{1}".format(df1yTitle, df2yTitle)
-    logging.info("Saveing file: {0}".format(path+filename+".png"))
+    logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
     plt.close(fig)
 
@@ -130,7 +130,7 @@ def makecomparionPlot(dfs, titles, filename, colors = ["Default"], plottitle = "
 
     plt.legend()
     path = makefolder(foldername)
-    logging.info("Saveing file: {0}".format(path+filename+".png"))
+    logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
     plt.close(fig)
 
@@ -158,7 +158,7 @@ def plotDataFrame(df, filename, xtitle, ytitle, legendlabels = None, plottitle =
     df.plot(ax = base)
 
     path = makefolder(foldername)
-    logging.info("Saveing file: {0}".format(path+filename+".png"))
+    logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
     plt.close(fig)
 
