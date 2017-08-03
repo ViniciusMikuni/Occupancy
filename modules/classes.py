@@ -152,7 +152,7 @@ class container:
             self.hitPixPerAreaSecNormZ[pos] = {}
             for layer in self.LayerNames:
                 logging.debug("{0} - position {1}".format(layer, pos))
-                values = modules.measurement.getValuesPerLayer(nhitpixelsperZ[layer][pos], nworkingModulesperZ[layer][pos], self.collBunches)
+                values = modules.measurement.getValuesPerLayer(nhitpixelsperZ[layer][pos], nworkingModulesperZ[layer][pos], self.collBunches, self.instLumi)
                 self.hitPixZ[pos][layer] = nhitpixelsperZ[layer][pos]
                 self.occupanciesZ[pos][layer] = values["Occ"]
                 self.hitPixPerModuleZ[pos][layer] = values["perMod"]
