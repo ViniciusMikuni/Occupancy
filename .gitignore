@@ -101,6 +101,8 @@ ENV/
 .mypy_cache/
 
 #Stuff
+*.tex
+*.csv
 *.html
 *.png
 *.pdf

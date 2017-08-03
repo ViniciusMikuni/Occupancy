@@ -91,6 +91,8 @@ def occupancyFromConfig(config):
     generaldesc = cfg.get("General","description")
     generaltitle = cfg.get("General","title")
     foldername = cfg.get("General","foldername")
+    texexport = cfg.getboolean("General","latexexport")
+    csvexport = cfg.getboolean("General","csvexport")
     invalidruns = []
     for run in runstoProcess:
         logging.info("Processing section {1} from config {0}".format(config, run))
@@ -114,12 +116,19 @@ def occupancyFromConfig(config):
         runstoProcess.remove(run)
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
-    modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
+    #modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
+    generatedplots = []
     for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
         generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)
-        print generatedfiles
-        modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername, group)
-    modules.htmlOutput.makeLandingPage(generaltitle, generatedfiles, runstoProcess, foldername)
+        generatedplots.append((generatedfiles , group))
+        #modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername, group)
+    #modules.htmlOutput.makeLandingPage(generaltitle, generatedfiles, runstoProcess, foldername)
+    #modules.htmlOutput.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername,
+    #                             makeIndex = True, makeTables = True, makePlotOverview = True,
+    #                             plottuples = generatedplots)
+    modules.output.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername,
+                             makeIndex = True, makeTables = True, makePlotOverview = True,plottuples = generatedplots,
+                             exportLaTex = texexport, exportCSV = csvexport)
         #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
