@@ -10,7 +10,8 @@ import modules.output
 
 def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
-              fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None):
+              fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None, cfgname = None,
+              linkTeX = False, linkCSV = False):
     from ConfigParser import SafeConfigParser
     logging.info("Generating HTML files")
     ####################################################################
@@ -37,9 +38,9 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
         else:
             DFstopass = (fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF)
         makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
-                            htmltemplates = htmltemplatetuple, DFs = DFstopass)
+                            htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV)
     if makeIndex:
-        makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview)
+        makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview, cfgname)
     if makePlotOverview:
         if plottuples is None:
             logging.error("No plotlists and names are given! No adding plots to index.")
@@ -50,7 +51,7 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
 
 
 def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
-                        singlerun = False, htmltemplates = None, DFs = None):
+                        singlerun = False, htmltemplates = None, DFs = None, linkTeX = False, linkCSV = False):
     logging.info("Processing runs and generate HTML files")
     from ConfigParser import SafeConfigParser
     styleconfig = SafeConfigParser()
@@ -86,12 +87,17 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
     blocks.append(title)
     PerRunDFs = modules.output.makePerRunDFs(perRunTables, runlist, groups)
     for run in runlist:
-        block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1],run.replace(" ","_"))
+        block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1],run)
         block = block + "Working modules (from hpDetMap):<br>"
         for layer in layerNames:
             block = block + "{0}: {1} modules<br>".format(layer, containerlist[run].nWorkingModules[layer])
         for group in groups:
-            block = block + "<h3>{0} ({1})</h3>\n{2}".format(styleconfig.get("Renaming", group), group, PerRunDFs["{0}_{1}".format(run, group)].to_html())
+            block += "<h3>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
+            if linkTeX:
+                block += "<small><a href=tex/fullPerRun_{0}_{1}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"))
+            if linkCSV:
+                block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
+            block += "</h3>\n{0}".format(PerRunDFs["{0}_{1}".format(run, group)].to_html())
         blocks.append(block+"<br>\n")
     blocks.append(footnote)
     blocks.append(footer)
@@ -106,7 +112,12 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
             blocks.append(title)
             block = "<h2>Run comparion for {0}</h2>\n".format(layer)
             for group in groups:
-                block = block + "<hr>\n<h3>{0} ({1})</h3>\n{2}".format(styleconfig.get("Renaming", group), group, RunCompDFs["{0}_{1}".format(layer, group)].to_html())
+                block = block + "<hr>\n<h3>{0} ({1})   ".format(styleconfig.get("Renaming", group), group)
+                if linkTeX:
+                    block += "<small><a href=tex/fullRunComp_{0}_{1}.tex>LaTeX</a></small> ".format(layer, group.replace("/","per"))
+                if linkCSV:
+                    block += "<small><a href=csv/fullRunComp_{0}_{1}.csv>CSV</a></small> ".format(layer, group.replace("/","per"))
+                block += "</h3>\n{0}".format(RunCompDFs["{0}_{1}".format(layer, group)].to_html())
             blocks.append(block+"<br>\n")
             blocks.append(footnote)
             blocks.append(footer)
@@ -125,9 +136,14 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
         blocks.append(style)
         blocks.append("<h1>{0} - z-dependency</h1>{1}\n<br><b>{2} ({3})</b>".format(titlestring, generaldescription, styleconfig.get("Renaming", group), group))
         for run in runlist:
-            block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1], run.replace(" ","_"))
+            block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1], run)
             for layer in layerNames:
-                block = block + "<h3>{0}</h3>\n{1}".format(layer, perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
+                block = block + "<h3>{0}    ".format(layer)
+                if linkTeX:
+                    block += "<small><a href=tex/zPerRun_{0}_{1}_{2}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
+                if linkCSV:
+                    block += "<small><a href=csv/zPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
+                block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
             blocks.append(block+"<br>\n")
             blocks.append(footnote)
             blocks.append(footer)
@@ -159,10 +175,10 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     for run in runlist:
         runblock = []
         nfiles = 0
-        runblock.append("<hr>\n<h3 id={1}>{0}</h3>\n".format(run, run.replace(" ","_")))
+        runblock.append("<hr>\n<h3 id={1}>{0}</h3>\n".format(run, run))
         for plot in generatedplots:
             filename = plot.split("/")[-1].split(".")[0]
-            if run.split(" ")[1] in filename:
+            if run in filename:
                 nfiles += 1
                 runblock.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
         if nfiles > 0:
@@ -192,10 +208,10 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
     logging.info("Saved: {0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
 
-def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True):
+def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True, cfgname = None):
 
     header, style, footnote, footer = htmltemplates
-    title = "<h1>{0}</h1>\n".format(titlestring)
+    title = "<h1>{0}</h1>\n Click <a href={1}>here</a> to view the configuration file.".format(titlestring, cfgname)
     blocks = []
     blocks.append(header)
     blocks.append(style)
@@ -205,10 +221,10 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
     zDeptableref = "<br>Z-depencdency: Tabels for runs: "
     zDepPlotref = "<br><br>Z-depencdency: Plots for runs: "
     for run in runlist:
-        fullDettableref += "<a href=perRunTables.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
-        zDeptableref += "<a href=zDependencyPixperLay.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
+        fullDettableref += "<a href=perRunTables.html#{0}>{1}</a> ".format(run, run)
+        zDeptableref += "<a href=zDependencyPixperLay.html#{0}>{1}</a> ".format(run, run)
         if plotsgenerated:
-            zDepPlotref += "<a href=plots_PixperLay_perRun.html#{0}>{1}</a> ".format(run.replace(" ","_"), run.split(" ")[1])
+            zDepPlotref += "<a href=plots_PixperLay_perRun.html#{0}>{1}</a> ".format(run, run)
     fullDettableref += "\n"
     zDeptableref += "(calculated from pixels hit per layer)\n"
     if plotsgenerated:

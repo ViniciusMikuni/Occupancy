@@ -179,6 +179,6 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                     plotdict = {}
                     for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
                         plotdict[layer] = perRunTablesZDependent[run]['Pix/Lay'][layer][values[0]]
-                    generatedplots.append(modules.plotting.plotDataFrame(pd.DataFrame(plotdict), "Zdep_{0}_{1}".format(run.split(" ")[1],values[0]), "Z position", values[1], foldername = foldername, plottitle = run))
+                    generatedplots.append(modules.plotting.plotDataFrame(pd.DataFrame(plotdict), "Zdep_{0}_{1}".format(run,values[0]), "Z position", values[1], foldername = foldername, plottitle = run))
 
     return generatedplots

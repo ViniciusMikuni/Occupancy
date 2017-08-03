@@ -5,7 +5,7 @@ K. Schweiger, 2017
 """
 import logging
 import os
-
+from shutil import copy2
 import pandas as pd
 
 from collections import OrderedDict
@@ -14,7 +14,7 @@ import modules.htmlOutput
 import modules.pandasOutput
 
 
-def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
+def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername, config,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
               exportLaTex = False, exportCSV = False):
     logging.info("Starting file export")
@@ -38,11 +38,16 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     styleconfig = SafeConfigParser()
     logging.debug("Loading style config")
     styleconfig.read("configs/style.cfg")
+
+    #Copy cfg file to output directory:
+    copy2(config, foldername)
+    configname = config.split("/")[1]
     ###############################################################
 
     if makeIndex or makeTables or makePlotOverview:
         modules.htmlOutput.makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
-                                     makeIndex, makeTables, makePlotOverview, plottuples, fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF)
+                                     makeIndex, makeTables, makePlotOverview, plottuples, fullperRunDF, fullRunCompDF,
+                                     ZperRunDF, ZRunCompDF, cfgname = configname, linkTeX = exportLaTex, linkCSV = exportCSV)
 
     if exportLaTex or exportCSV:
         defaultprecision = pd.get_option('precision')

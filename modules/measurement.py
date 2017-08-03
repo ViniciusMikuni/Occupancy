@@ -126,7 +126,7 @@ def occupancyFromConfig(config):
     #modules.htmlOutput.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername,
     #                             makeIndex = True, makeTables = True, makePlotOverview = True,
     #                             plottuples = generatedplots)
-    modules.output.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername,
+    modules.output.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername, config, 
                              makeIndex = True, makeTables = True, makePlotOverview = True,plottuples = generatedplots,
                              exportLaTex = texexport, exportCSV = csvexport)
         #modules.output.makeRunComparisonTable(Resultcontainers)
