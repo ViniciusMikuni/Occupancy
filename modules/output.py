@@ -94,9 +94,13 @@ def makePerRunDFs(inputdf, runs, groups, layers = None):
                     retDFs.update({"{0}_{1}_{2}".format(run,group,layer) : inputdf[run][group][layer]})
     return retDFs
 
-def makeRunCompDFs(inputdf, layers, groups):
+def makeRunCompDFs(inputdf, layers, groups, ladders = None):
     retDFs = OrderedDict([])
     for layer in layers:
         for group in groups:
-            retDFs.update({"{0}_{1}".format(layer,group) : inputdf[layer][group]})
+            if ladders is None:
+                retDFs.update({"{0}_{1}".format(layer,group) : inputdf[layer][group]})
+            else:
+                for ladder in ladders:
+                    retDFs.update({"{0}_{1}_{2}".format(layer, group, ladder) : inputdf[group][ladder][layer]})
     return retDFs

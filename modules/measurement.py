@@ -115,6 +115,7 @@ def occupancyFromConfig(config):
     for run in invalidruns:
         runstoProcess.remove(run)
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
+    modules.pandasOutput.makeInnerOuterLadderDetectorTables(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
     #modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
     generatedplots = []

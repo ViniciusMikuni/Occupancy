@@ -106,7 +106,7 @@ def makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun = False
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay"]
 
-    runtables, runcomparisonperLayer = {}, None
+    runtables, runcomparisonperLayer = {}, {}
     for run in runlist:
         runtables[run] = {}
         datadict = containerlist[run].getpdDataFrame("partialDetectorInnerOuterLadders")
@@ -123,6 +123,37 @@ def makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun = False
                     layerseries[ladder] = series
                 currentDF = pd.DataFrame(layerseries)
                 runtables[run][group][layer] = currentDF.transpose()
+    # RunComparison tables -> For inner/outer ladder -> for each layer -> for each group -> for each run on row
+    # ----> runcomparisonperLayer[ladder][layer][group]
+    slices = {}
+    for group in groups:
+        slices[group] = {}
+        for ladder in ["inner", "outer"]:
+            slices[group][ladder] = {}
+            for layer in layerNames:
+                slices[group][ladder][layer] = {}
+
+    for run in runlist:
+        datadict = containerlist[run].getpdDataFrame("partialDetectorInnerOuterLadders")
+        for group in groups:
+            for ladder in ["inner", "outer"]:
+                for layer in layerNames:
+                    layerdataforLadderLayer = datadict[group].transpose().loc[ladder].transpose().loc[layer]
+
+                    generalinfo = pd.Series([containerlist[run].nWorkingModulesInOut[layer][ladder],
+                                             containerlist[run].collBunches,
+                                             containerlist[run].instLumi],
+                                            index = ["nModules", "nBunches", "instLumi"])
+                    slices[group][ladder][layer][run] = generalinfo.append(layerdataforLadderLayer)
+
+    runcomparisonperLayer = {}
+    for group in groups:
+        runcomparisonperLayer[group] = {}
+        for ladder in ["inner", "outer"]:
+            runcomparisonperLayer[group][ladder] = {}
+            for layer in layerNames:
+                runcomparisonperLayer[group][ladder][layer] = pd.DataFrame(slices[group][ladder][layer]).transpose()
+
     return runtables, runcomparisonperLayer
 
 def makeRunComparisonPlots(containerlist, runlist, foldername, group):
