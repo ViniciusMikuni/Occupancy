@@ -3,6 +3,7 @@ import numpy as np
 
 import os
 import logging
+from copy import copy
 
 import modules.plotting
 
@@ -100,7 +101,29 @@ def makeZdepDetectorTables(containerlist, runlist, singlerun = False):
     #TODO: Implement run comparison per z position
     return runtables, runcomparisonperLayer
 
+def makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun = False):
+    logging.info("Getting pandas DF for inner and outer ladder detector parts")
+    layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
+    groups = ["Pix/Lay"]
 
+    runtables, runcomparisonperLayer = {}, None
+    for run in runlist:
+        runtables[run] = {}
+        datadict = containerlist[run].getpdDataFrame("partialDetectorInnerOuterLadders")
+        for group in groups:
+            runtables[run][group] = {}
+            data = datadict[group]
+            for layer in layerNames:
+                layerdata = data.loc[layer]
+                layerseries = {}
+                for ladder in ["inner", "outer"]:
+                    positiondata = layerdata[ladder]
+                    series = pd.Series([containerlist[run].nWorkingModulesInOut[layer][ladder]], index = ["nModules"])
+                    series = series.append(positiondata)
+                    layerseries[ladder] = series
+                currentDF = pd.DataFrame(layerseries)
+                runtables[run][group][layer] = currentDF.transpose()
+    return runtables, runcomparisonperLayer
 
 def makeRunComparisonPlots(containerlist, runlist, foldername, group):
     if group not in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
@@ -156,29 +179,48 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
             generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'perAreaNorm', lumiperbx, r'LumiperBX [cm$^{-2}$s$^{-1}$]',
                                                                    "{0}_{2}_perAreaNorm{1}".format(prefix, layer, group.replace("/","per")),
                                                                    layer, foldername))
+            doplots = False
             if group == "Pix/Lay":
-                generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["occupancy"], r"Occupancy",
-                                                                       lumiperbx, r'Inst. luminosity per coolliding bunch [cm$^{-2}$s$^{-1}$]',
-                                                                       "{0}_{2}_Occupancy{1}".format(prefix, layer, group.replace("/","per")),
-                                                                       layer, foldername))
-                generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["occupancy"],
-                                                                          runcompperlayer[layer]['Pix/Det']["occupancy"]],
+                doplots = True
+                othergroup = "Pix/Det"
+            elif group == "Clus/Lay":
+                doplots = True
+                othergroup = "Clus/Det"
+            if doplots:
+                if group == "Pix/Lay":
+                    generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["occupancy"], r"Occupancy",
+                                                                           lumiperbx, r'Inst. luminosity per coolliding bunch [cm$^{-2}$s$^{-1}$]',
+                                                                           "{0}_{2}_Occupancy{1}".format(prefix, layer, group.replace("/","per")),
+                                                                           layer, foldername))
+                    generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["occupancy"],
+                                                                              runcompperlayer[layer][othergroup]["occupancy"]],
+                                                                             [r"Calculated from layer", r"Calculated from dets"],
+                                                                             "{0}_{2}_LayerVsDet_Occupancy{1}".format(prefix, layer, group.replace("/","per")),
+                                                                             plottitle = layer, foldername = foldername,
+                                                                             yTitle = r"Occupancy"))
+                generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["perAreaSec"],runcompperlayer[layer][othergroup]["perAreaSec"]],
                                                                          [r"Calculated from layer", r"Calculated from dets"],
-                                                                         "{0}_{2}_LayerVsDet_Occupancy{1}".format(prefix, layer, group.replace("/","per")),
+                                                                         "{0}_{2}_LayerVsDet_rate{1}".format(prefix, layer, group.replace("/","per")),
                                                                          plottitle = layer, foldername = foldername,
-                                                                         yTitle = r"Occupancy"))
-            generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["perAreaSec"],runcompperlayer[layer]['Pix/Det']["perAreaSec"]],
-                                                                     [r"Calculated from layer", r"Calculated from dets"],
-                                                                     "{0}_{2}_LayerVsDet_rate{1}".format(prefix, layer, group.replace("/","per")),
-                                                                     plottitle = layer, foldername = foldername,
-                                                                     yTitle = r"hit rate per active module area [cm$^{-2}$s$^{-1}$]"))
+                                                                         yTitle = r"hit rate per active module area [cm$^{-2}$s$^{-1}$]"))
+                generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["perAreaNorm"],runcompperlayer[layer][othergroup]["perAreaNorm"]],
+                                                                         [r"Calculated from layer", r"Calculated from dets"],
+                                                                         "{0}_{2}_LayerVsDet_areaNorm{1}".format(prefix, layer, group.replace("/","per")),
+                                                                         plottitle = layer, foldername = foldername,
+                                                                         yTitle = r"Hits per module area norm. to inst. luminosity per bunch"))
         # Z depdentcy
         if group == 'Pix/Lay':
-            for values in zip(["occupancy", 'perAreaSec'],[r"Occupancy",r"hit rate per active module area [cm$^{-2}$s$^{-1}$]"]):
+            for values in zip(["occupancy", 'perAreaSec', 'perAreaNorm'],
+                              [r"Occupancy",r"hit rate per active module area [cm$^{-2}$s$^{-1}$]",r"Hits per module area norm. to inst. luminosity per bunch"]):
+                runcompperLayer = {"Layer1" : {}, "Layer2" : {}, "Layer3" : {}, "Layer4" : {}}
                 for run in runlist:
                     plotdict = {}
                     for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
                         plotdict[layer] = perRunTablesZDependent[run]['Pix/Lay'][layer][values[0]]
+                        runcompperLayer[layer][run] = perRunTablesZDependent[run]['Pix/Lay'][layer][values[0]]
                     generatedplots.append(modules.plotting.plotDataFrame(pd.DataFrame(plotdict), "Zdep_{0}_{1}".format(run,values[0]), "Z position", values[1], foldername = foldername, plottitle = run))
+                #for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
+                #    generatedplots.append(modules.plotting.plotDataFrame(pd.DataFrame(runcompperLayer[layer]), "ZdepRunComp_{0}_{1}".format(layer, values[0]),
+                #                                                         "Z position", values[1], foldername = foldername, plottitle = layer))
 
     return generatedplots

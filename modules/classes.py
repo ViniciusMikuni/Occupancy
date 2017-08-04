@@ -13,7 +13,7 @@ from modules.modulecounter import modulecounter
 from modules.tests import isHistoinFile
 import modules.measurement
 import modules.zdep
-
+import modules.ladder
 
 class container:
     """
@@ -86,6 +86,39 @@ class container:
         if not self.invalidFile:
             self.setzDependency()
 
+        #Variable for inner/outer ladder dependency
+        self.nWorkingModulesInOut = {}
+        #Pixels
+        self.hitPixInOut = {}
+        self.occupanciesInOut = {}
+        self.hitPixPerModuleInOut = {}
+        self.hitPixPerAreaInOut = {}
+        self.hitPixPerAreaSecInOut = {}
+        self.hitPixPerAreaNormInOut = {}
+        self.hitPixPerAreaSecNormInOut = {}
+
+        # Set inner/outer ladder dependency values
+        if not self.invalidFile:
+            self.setInnerOuterLadderDependency()
+
+        #TODO Implement: variables will have to be ordered differently because not all layer have the same
+        #     number of ladder positions. Maybe fill with NaN or something. Will be added later.
+        """
+        #Variable for ladder dependency
+        self.nWorkingModulesLadder = {}
+        #Pixels
+        self.hitPixLadder = {}
+        self.occupanciesLadder = {}
+        self.hitPixPerModuleLadder = {}
+        self.hitPixPerAreaLadder = {}
+        self.hitPixPerAreaSecLadder = {}
+        self.hitPixPerAreaNormLadder = {}
+        self.hitPixPerAreaSecNormLadder = {}
+
+        # Set inner/outer ladder dependency values
+        if not self.invalidFile:
+            self.setLadderDependency()
+        """
 
     def setBaseValuesForallLayer(self):
         """
@@ -181,6 +214,44 @@ class container:
                 self.hitPixPerAreaSecZ[layer][pos] = values["perAreaSec"]
                 self.hitPixPerAreaSecNormZ[layer][pos] = values["perAreaSecNorm"]
         """
+
+    def setInnerOuterLadderDependency(self):
+        logging.info("Setting innner/outer ladder dependent values")
+        HitPixInOut = modules.ladder.getPixelHitsInOutladderModules(self.file)
+        self.nWorkingModulesInOut = modules.ladder.getworkingInOutladderModules(self.file)
+
+        for ladder in ["inner","outer"]:
+            self.hitPixInOut[ladder] = {}
+            self.occupanciesInOut[ladder] = {}
+            self.hitPixPerModuleInOut[ladder] = {}
+            self.hitPixPerAreaInOut[ladder] = {}
+            self.hitPixPerAreaSecInOut[ladder] = {}
+            self.hitPixPerAreaNormInOut[ladder] = {}
+            self.hitPixPerAreaSecNormInOut[ladder] = {}
+            for layer in self.LayerNames:
+                logging.debug("{0} - {1} ladder".format(layer, ladder))
+                values = modules.measurement.getValuesPerLayer(HitPixInOut[layer][ladder], self.nWorkingModulesInOut[layer][ladder], self.collBunches, self.instLumi)
+                self.hitPixInOut[ladder][layer] = HitPixInOut[layer][ladder]
+                self.occupanciesInOut[ladder][layer] = values["Occ"]
+                self.hitPixPerModuleInOut[ladder][layer] = values["perMod"]
+                self.hitPixPerAreaInOut[ladder][layer] = values["perArea"]
+                self.hitPixPerAreaSecInOut[ladder][layer] = values["perAreaSec"]
+                self.hitPixPerAreaNormInOut[ladder][layer] = values["perAreaNorm"]
+                self.hitPixPerAreaSecNormInOut[ladder][layer] = values["perAreaNorm"]
+
+    def setLadderDependency(self):
+        logging.info("Setting ladder dependent values")
+        HitPixLadder = modules.ladder.getPixelHitsladderModules(self.file)
+        self.nWorkingModulesLadder = modules.ladder.getworkingladderModules(self.file)
+
+        for layer in self.LayerNames:
+            innerpositions = modules.ladder.getLadderidList(layer, "inner")
+            outerpositions = modules.ladder.getLadderidList(layer, "outer")
+            self.ladderpositions = innerpositions + outerpositions
+
+        #TODO: Implement: See comment in init
+
+
     def getValuesasDict(self, valuetype):
         retdict = {"Pix/Lay" : None, "Pix/Det" : None, "Clus/Lay" : None, "Clus/Det" : None}
         if valuetype == "fullDetector":
@@ -214,7 +285,7 @@ class container:
                                     "perArea" : self.hitClustersPerDetArea,
                                     "perAreaSec" : self.hitClustersPerDetAreaSec,
                                     "perAreaNorm" : self.hitClustersPerDetAreaNorm}
-        elif valuetype == "partialDetector":
+        elif valuetype == "partialDetectorZ":
             if part in self.zpositions:
                 retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModuleZ[part],
                                       "perArea" : self.hitPixPerAreaZ[part],
@@ -237,6 +308,14 @@ class container:
                                         "perAreaSec" : self.hitClustersPerDetAreaSecZ[part],
                                         "perAreaSecNorm" : self.hitClustersPerDetAreaSecNormZ[part]}
                 """
+        elif valuetype == "partialDetectorLadder":
+            if part in ["inner", "outer"]:
+                retdict["Pix/Lay"] = {"perMod" : self.hitPixPerModuleInOut[part],
+                                      "perArea" : self.hitPixPerAreaInOut[part],
+                                      "perAreaSec" : self.hitPixPerAreaSecInOut[part],
+                                      "perAreaNorm" : self.hitPixPerAreaNormInOut[part],
+                                      "occupancy" : self.occupanciesInOut[part]}
+
         return retdict
 
     def getValuesasDetailDict2(self, valuetype, part = None):
@@ -256,7 +335,7 @@ class container:
             if valuetype.startswith("partialDetectorZ"):
                 position = part
                 if position in self.zpositions:
-                    retdict = self.getValuesasDetailDict("partialDetector", position)
+                    retdict = self.getValuesasDetailDict("partialDetectorZ", position)
                     retdict["Pix/Lay"].update({"nhit" : self.hitPixZ[position]})
                     """
                     Not implemented yet
@@ -266,6 +345,15 @@ class container:
                     """
                 else:
                     logging.warning("Valuetype {0} in no valid argument for z-dependent values".format(valuetype))
+            elif valuetype.startswith("partialDetectorInnerOuterLadders"):
+                position = part
+                if position in ["inner", "outer"]:
+                    retdict = self.getValuesasDetailDict("partialDetectorLadder", position)
+                    retdict["Pix/Lay"].update({"nhit" : self.hitPixInOut[position]})
+            elif valuetype.startswith("partialDetectorLadders"):
+                #TODO. Implement: See comment in init
+                pass
+
         return retdict
 
     def getValuesDetailDictperLayer(self, valuetype, layer = "Layer1"):
@@ -298,7 +386,6 @@ class container:
         import pandas as pd
         import numpy as np
 
-        returndict = {}
         groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
         subgroups = {"Pix/Lay" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec", "occupancy"],
                      "Pix/Det" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec", "occupancy"],
@@ -306,6 +393,7 @@ class container:
                      "Clus/Det" : ["nhit","perMod", "perArea", "perAreaNorm", "perAreaSec"]}
         layerlist = self.LayerNames
         if valuetype == "fullDetector":
+            returndict = {}
             valuedict = self.getValuesasDetailDict2(valuetype)
             for group in groups:
                 if valuetype == "fullDetector":
@@ -325,6 +413,18 @@ class container:
                     valuedict = self.getValuesasDetailDict2(valuetype, position)
                     a[position] = pd.DataFrame(valuedict[group], index = layerlist)
                 returndict[group] = copy(a)
+
+        elif valuetype.startswith("partialDetectorInnerOuterLadders"):
+            returndict = {}
+            for group in ["Pix/Lay"]:
+                mulitcolumnstuples = [(x,y) for x in ["inner","outer"] for y in subgroups[group]]
+                mulitcolumns = pd.MultiIndex.from_tuples(mulitcolumnstuples, names=['position', 'value'])
+                a = pd.DataFrame(index = self.LayerNames, columns = mulitcolumns)
+                for position in ["inner","outer"]:
+                    valuedict = self.getValuesasDetailDict2(valuetype, position)
+                    a[position] = pd.DataFrame(valuedict[group], index = layerlist)
+                returndict[group] = copy(a)
+
         return returndict
 
     def printValues(self):

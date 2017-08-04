@@ -10,8 +10,9 @@ import modules.output
 
 def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
-              fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None, cfgname = None,
-              linkTeX = False, linkCSV = False):
+              fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None,
+              LadderperRunDF = None, LadderRunCompDF = None,
+              cfgname = None, linkTeX = False, linkCSV = False):
     from ConfigParser import SafeConfigParser
     logging.info("Generating HTML files")
     ####################################################################
@@ -33,10 +34,10 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     if makeTables:
         #Check if DFs are passed -> Used to speed up the script
         #TODO change when zdep runcomp is implemented
-        if fullperRunDF is None or fullRunCompDF is None or ZperRunDF is None:
+        if fullperRunDF is None or fullRunCompDF is None or ZperRunDF is None or LadderperRunDF is None:
             DFstopass = None
         else:
-            DFstopass = (fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF)
+            DFstopass = (fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF, LadderperRunDF, LadderRunCompDF)
         makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
                             htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV)
     if makeIndex:
@@ -145,11 +146,35 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                     block += "<small><a href=csv/zPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
                 block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
             blocks.append(block+"<br>\n")
-            blocks.append(footnote)
-            blocks.append(footer)
-            modules.pandasOutput.writeListToFile(blocks, "{0}/zDependency{1}.html".format(foldername, group.replace("/","per")))
+        blocks.append(footnote)
+        blocks.append(footer)
+        modules.pandasOutput.writeListToFile(blocks, "{0}/zDependency{1}.html".format(foldername, group.replace("/","per")))
 
+    #HTML file per group for inner/outer ladder values per layer
+    if DFs is None:
+        perRunTables = modules.pandasOutput.makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun)[0]
+    else:
+        perRunTables = DFs[4]
 
+    perRunDFs = modules.output.makePerRunDFs(perRunTables, runlist, ["Pix/Lay"], layerNames)
+    for group in ["Pix/Lay"]:
+        blocks = []
+        blocks.append(header)
+        blocks.append(style)
+        blocks.append("<h1>{0} - Inner/Outer ladder dependency</h1>{1}\n<br><b>{2} ({3})</b>".format(titlestring, generaldescription, styleconfig.get("Renaming", group), group))
+        for run in runlist:
+            block = "<hr>\n<h2 id={4}>{0}</h2>\n{1} with average inst. luminosity: {2} cm^-2 s^-1<br>\nDataset: {3}<br>\n".format(run, containerlist[run].comments[0], containerlist[run].instLumi, containerlist[run].comments[1], run)
+            for layer in layerNames:
+                block = block + "<h3>{0}    ".format(layer)
+                if linkTeX:
+                    block += "<small><a href=tex/InOutPerRun_{0}_{1}_{2}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
+                if linkCSV:
+                    block += "<small><a href=csv/InOutPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
+                block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
+            blocks.append(block+"<br>\n")
+        blocks.append(footnote)
+        blocks.append(footer)
+        modules.pandasOutput.writeListToFile(blocks, "{0}/InnerOuterLadderDependency{1}.html".format(foldername, group.replace("/","per")))
 
 def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlist, foldername, midfix = "Pix/Lay"):
     """
@@ -211,7 +236,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
 def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True, cfgname = None):
 
     header, style, footnote, footer = htmltemplates
-    title = "<h1>{0}</h1>\n Click <a href={1}>here</a> to view the configuration file.".format(titlestring, cfgname)
+    title = "<h1>{0}</h1>\n Codebase and instructions on <a href=https://github.com/kschweiger/Occupancy>GitHub</a> <br> \nClick <a href={1}>here</a> to view the configuration file.".format(titlestring, cfgname)
     blocks = []
     blocks.append(header)
     blocks.append(style)
@@ -219,10 +244,12 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
     subheaderperRun = "<h2> Per run monitoring</h2>\n"
     fullDettableref = "Full Detector: Tabels for runs: "
     zDeptableref = "<br>Z-depencdency: Tabels for runs: "
+    InOutDeptableref = "<br>Inner/Outer ladder dependency: Tables for runs: "
     zDepPlotref = "<br><br>Z-depencdency: Plots for runs: "
     for run in runlist:
         fullDettableref += "<a href=perRunTables.html#{0}>{1}</a> ".format(run, run)
         zDeptableref += "<a href=zDependencyPixperLay.html#{0}>{1}</a> ".format(run, run)
+        InOutDeptableref += "<a href=InnerOuterLadderDependencyPixperLay.html#{0}>{1}</a> ".format(run, run)
         if plotsgenerated:
             zDepPlotref += "<a href=plots_PixperLay_perRun.html#{0}>{1}</a> ".format(run, run)
     fullDettableref += "\n"
@@ -232,6 +259,7 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
     blocks.append(subheaderperRun)
     blocks.append(fullDettableref)
     blocks.append(zDeptableref)
+    blocks.append(InOutDeptableref)
     if plotsgenerated:
         blocks.append(zDepPlotref)
 

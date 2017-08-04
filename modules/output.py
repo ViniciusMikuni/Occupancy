@@ -24,14 +24,16 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     # Getting dataframes
     fullperRunDF, fullRunCompDF = modules.pandasOutput.makeFullDetectorTables(containerlist, runlist)
     ZperRunDF, ZRunCompDF = modules.pandasOutput.makeZdepDetectorTables(containerlist, runlist)
-
+    InOutperRunDF, InOutRunCompDF = modules.pandasOutput.makeInnerOuterLadderDetectorTables(containerlist, runlist)
     #Getting Tables
     logging.debug("Getting perRun tables for full detector")
-    fullPerRunDFs = modules.output.makePerRunDFs(fullperRunDF, runlist, groups)
+    fullPerRunDFs = makePerRunDFs(fullperRunDF, runlist, groups)
     logging.debug("Getting RunComp tables for full detector")
-    fullRunCompDFs = modules.output.makeRunCompDFs(fullRunCompDF, layerNames, groups)
+    fullRunCompDFs = makeRunCompDFs(fullRunCompDF, layerNames, groups)
     logging.debug("Getting perRun tables for z partial detector")
-    zPerRunDFs = modules.output.makePerRunDFs(ZperRunDF, runlist, ["Pix/Lay"], layerNames)
+    zPerRunDFs = makePerRunDFs(ZperRunDF, runlist, ["Pix/Lay"], layerNames)
+    logging.debug("Getting perRun tables for inner/outer ladder partial detector")
+    InOutPerRunDFs = makePerRunDFs(InOutperRunDF, runlist, ["Pix/Lay"], layerNames)
 
     # Style config
     from ConfigParser import SafeConfigParser
@@ -47,7 +49,8 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     if makeIndex or makeTables or makePlotOverview:
         modules.htmlOutput.makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
                                      makeIndex, makeTables, makePlotOverview, plottuples, fullperRunDF, fullRunCompDF,
-                                     ZperRunDF, ZRunCompDF, cfgname = configname, linkTeX = exportLaTex, linkCSV = exportCSV)
+                                     ZperRunDF, ZRunCompDF, InOutperRunDF, InOutRunCompDF,
+                                     cfgname = configname, linkTeX = exportLaTex, linkCSV = exportCSV)
 
     if exportLaTex or exportCSV:
         defaultprecision = pd.get_option('precision')
@@ -63,6 +66,8 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
                 modules.pandasOutput.writeStringToFile(fullRunCompDFs[key].to_latex(), "{0}/tex/fullRunComp_{1}.tex".format(foldername, key.replace("/","per")))
             for key in zPerRunDFs:
                 modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_latex(), "{0}/tex/zPerRun_{1}.tex".format(foldername, key.replace("/","per")))
+            for key in InOutPerRunDFs:
+                modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_latex(), "{0}/tex/InOutPerRun_{1}.tex".format(foldername, key.replace("/","per")))
             pd.set_option('precision',defaultprecision)
         if exportCSV:
             logging.info("CSV export initialized")
@@ -75,6 +80,8 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
                 modules.pandasOutput.writeStringToFile(fullRunCompDFs[key].to_csv(sep=";"), "{0}/csv/fullRunComp_{1}.csv".format(foldername, key.replace("/","per")))
             for key in zPerRunDFs:
                 modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_csv(sep=";"), "{0}/csv/zPerRun_{1}.csv".format(foldername, key.replace("/","per")))
+            for key in InOutPerRunDFs:
+                modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_csv(sep=";"), "{0}/csv/InOutPerRun_{1}.csv".format(foldername, key.replace("/","per")))
 
 def makePerRunDFs(inputdf, runs, groups, layers = None):
     retDFs = OrderedDict([])

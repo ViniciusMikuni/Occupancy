@@ -23,6 +23,7 @@ def modulecounter(inputfile):
             workingmodules[lnames[ih2D]] = nmodules[lnames[ih2D]]
     return workingmodules
 
+
 def getworkingmodulesfromHisto(hMap):
     nworkingModules = 0
 
