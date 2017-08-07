@@ -1,6 +1,12 @@
+"""
+Module for all function related to the per ladder values
+"""
 import logging
 
 def getLadderidList(layer, position = "inner"):
+    """
+    Function returns the ladder IDs for layer and position (inner or outer)
+    """
     ret = False
     if layer not in ["Layer1","Layer2","Layer3","Layer4"]:
         logging.error("Passed layer not in Layer1, Layer2, Layer3, Layer4")

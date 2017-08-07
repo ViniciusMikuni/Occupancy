@@ -20,7 +20,7 @@ def setup_logging( default_path='configs/logging.json', default_level=logging.IN
     if os.path.exists(path):
         with open(path, 'rt') as f:
             config = json.load(f)
-        #Overwrite config definitions with system arguments (Default is same as in config)
+        #Overwrite config definitions with command line arguments (Default is same as in config)
         config["handlers"]["info_file_handler"]["filename"] = logname+".log"
         config["handlers"]["error_file_handler"]["filename"] = errname+".log"
         config["handlers"]["console"]["level"] = loglevel
@@ -120,12 +120,12 @@ if __name__ == "__main__":
         default = None,
     )
 
-    args = argumentparser.parse_args()
+    arguments = argumentparser.parse_args()
 
-    if args.config is None and (args.inputfile is None and args.collBunch is None and args.instLumi is None):
+    if arguments.config is None and (arguments.inputfile is None and arguments.collBunch is None and arguments.instLumi is None):
         print "Either set config or inputfile and colliding bunches"
         exit()
     #
     ##############################################################################################################
     ##############################################################################################################
-    main(args)
+    main(arguments)

@@ -1,3 +1,6 @@
+"""
+Module for all function related to the z dependent values
+"""
 import logging
 
 def npixZdependency(inputfile):
@@ -35,10 +38,8 @@ def npixZdependency(inputfile):
                 pixelperL += h2D.GetBinContent(x+il, y+iface) #h2D.GetBinContent(1,1) is lower left corner
                 if h2D.GetBinContent(x+il, y+iface) > 0:
                     modulesworking += 1
-                #print "Events -> x: {0} | y: {1} ===> {2}".format(x+il, y+iface, pixelperL)
             zvalDict.update({l : pixelperL})
             zmoduleDict.update({l : modulesworking})
-        #print zvalDic
         phitperzpositions[layerNames[ih2D]] = zvalDict
         workingmodules[layerNames[ih2D]] = zmoduleDict
     return phitperzpositions, workingmodules

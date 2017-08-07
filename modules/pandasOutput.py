@@ -24,15 +24,12 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
-    #runseries = pd.Series(runlist)
-
     slices = {}
     for name in layerNames:
         slices[name] = {}
         for group in groups:
             slices[name][group] = {}
     for run in runlist:
-        #print run
         containerDF = containerlist[run].getpdDataFrame(datatype)
         for name in layerNames:
             for group in groups:
@@ -41,23 +38,16 @@ def getDataFramesForRunComp(containerlist, runlist, datatype = "fullDetector"):
                                          containerlist[run].instLumi],
                                         index = ["nModules", "nBunches", "instLumi"])
                 slices[name][group].update({ run : generalinfo.append(containerDF[group].loc[name])})
-                #print "slice[{0}][{1}] = \n{2}".format(name,group,slices[name][group][run])
 
     for name in layerNames:
-        #print "-----------"+name+"-----------"
         dataframes[name] = {}
         for group in groups:
-            #print "++++++++"+group+"++++++++"
             dataframes[name][group] = pd.DataFrame(slices[name][group]).transpose()
-            #print dataframes[name][group]
-
 
     return dataframes
-    #writeStringToFile(b.to_html(), "test.html")
 
 def makeFullDetectorTables(containerlist, runlist, singlerun = False):
     logging.info("Getting pandas DF for full detector")
-    layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
 
     runtables = {}
@@ -66,7 +56,6 @@ def makeFullDetectorTables(containerlist, runlist, singlerun = False):
         data = containerlist[run].getpdDataFrame("fullDetector")
         for group in groups:
             runtables[run][group] = data[group]
-            #writeStringToFile(data[group].to_html(), "{0}/filldet_{1}_{2}.html".format(foldername, run.replace(" ","-"), group.replace("/","per")))
     if not singlerun:
         runcomparisonperLayer = getDataFramesForRunComp(containerlist, runlist, "fullDetector")
     else:
@@ -240,13 +229,32 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                          plottitle = layer, foldername = foldername,
                                                                          yTitle = r"Hits per module area norm. to inst. luminosity per bunch"))
         # Inner/Outer ladder dependency
-        for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
-            generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["occupancy"],
-                                                                      rumcompladders["Pix/Lay"]["outer"][layer]["occupancy"],
-                                                                      runcompperlayer[layer]["Pix/Lay"]["occupancy"]],
-                                                                     [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
-                                                                     "InnerVsOuterRunComp_{0}_occupancy".format(layer), plottitle = layer,
-                                                                     foldername = foldername, yTitle = r"Occupancy"))
+        if group == "Pix/Lay":
+            for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
+                generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["occupancy"],
+                                                                          rumcompladders["Pix/Lay"]["outer"][layer]["occupancy"],
+                                                                          runcompperlayer[layer]["Pix/Lay"]["occupancy"]],
+                                                                         [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
+                                                                         "InnerVsOuterRunComp_{0}_occupancy".format(layer), plottitle = layer,
+                                                                         foldername = foldername, yTitle = r"Occupancy"))
+                generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["perAreaSec"],
+                                                                          rumcompladders["Pix/Lay"]["outer"][layer]["perAreaSec"],
+                                                                          runcompperlayer[layer]["Pix/Lay"]["perAreaSec"]],
+                                                                         [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
+                                                                         "InnerVsOuterRunComp_{0}_perAreaSec".format(layer), plottitle = layer,
+                                                                         foldername = foldername, yTitle = r"hit rate per active module area [cm$^{-2}$s$^{-1}$]"))
+                generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["perAreaNorm"],
+                                                                          rumcompladders["Pix/Lay"]["outer"][layer]["perAreaNorm"],
+                                                                          runcompperlayer[layer]["Pix/Lay"]["perAreaNorm"]],
+                                                                         [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
+                                                                         "InnerVsOuterRunComp_{0}_perAreaNorm".format(layer), plottitle = layer,
+                                                                         foldername = foldername, yTitle = r"Hits per module area norm. to inst. luminosity per bunch"))
+                generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["nhit"],
+                                                                          rumcompladders["Pix/Lay"]["outer"][layer]["nhit"],
+                                                                          runcompperlayer[layer]["Pix/Lay"]["nhit"]],
+                                                                         [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
+                                                                         "InnerVsOuterRunComp_{0}_nhit".format(layer), plottitle = layer,
+                                                                         foldername = foldername, yTitle = r"Number of pixels hit"))
 
         # Z dependency
         if group == 'Pix/Lay':

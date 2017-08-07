@@ -11,6 +11,7 @@ import modules.classes as classes
 import modules.output
 import modules.pandasOutput
 import modules.htmlOutput
+
 def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
                       RevFrequ = 11245, ActiveModArea = 10.45, PixperMod = 66560 ):
     """
@@ -23,7 +24,7 @@ def getValuesPerLayer(n, nModules, collBunches, lumi = 1, isCluster = False,
 
     Set isCluster to True if used for cluster because occupancy can ne be measured.
 
-    returns dict with keys: PixpMod, PixpArea, PixpAreaSec, Occ
+    returns dict with keys: perMod, perArea, perAreaSec, Occ, perAreaNorm
     """
     logging.debug("calculateing per layer with {0}, {1}, {2}".format(n, nModules, collBunches))
 
@@ -54,7 +55,7 @@ def getValuesPerDet(nperDet, collBunches, lumi = 1, isCluster = False,
 
     Set isCluster to True if used for cluster because occupancy can ne be measured.
 
-    returns dict with keys: PixpMod, PixpArea, PixpAreaSec, Occ
+    returns dict with keys: perMod, perArea, perAreaSec, Occ, perAreaNorm
     """
     logging.debug("calculateing per Det with {0}, {1}".format(nperDet, collBunches))
 
@@ -78,6 +79,11 @@ def calculateCommonValues(nPerModule, collBunches, RevFrequ, ActiveModArea, Pixp
     return perArea, perAreaSec
 
 def occupancyFromConfig(config):
+    """
+    Calculate occupancy and related values from a config defining files, nBunches,... . See README.md for detailed information.
+
+    Use https://github.com/cms-analysis/DPGAnalysis-SiPixelTools/tree/master/HitAnalyzer/test/PixClusterTest.* to preprocess the data samples.
+    """
     from ConfigParser import SafeConfigParser
 
     logging.info("Processing config {0}".format(config))
@@ -111,34 +117,25 @@ def occupancyFromConfig(config):
         else:
             invalidruns.append(run)
         del container
-        #modules.output.makeTabel(Resultcontainers[run], outputname = "out"+run.replace(" ",""))
-        #print Resultcontainers
+
     for run in invalidruns:
         runstoProcess.remove(run)
-    #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
-    #modules.pandasOutput.makeInnerOuterLadderDetectorTables(Resultcontainers, runstoProcess)
-    #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
-    #modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
+
     generatedplots = []
     for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
         generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)
         generatedplots.append((generatedfiles , group))
-        #modules.htmlOutput.makePlotOverviewFile(generaltitle, generaldesc, generatedfiles, runstoProcess, foldername, group)
-    #modules.htmlOutput.makeLandingPage(generaltitle, generatedfiles, runstoProcess, foldername)
-    #modules.htmlOutput.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername,
-    #                             makeIndex = True, makeTables = True, makePlotOverview = True,
-    #                             plottuples = generatedplots)
+
     modules.output.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername, config,
                              makeIndex = True, makeTables = True, makePlotOverview = True,plottuples = generatedplots,
                              exportLaTex = texexport, exportCSV = csvexport)
-        #modules.output.makeRunComparisonTable(Resultcontainers)
 
 def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
     """
-    Calculate occupency and related values from a preprocesst file containing
+    Calculate occupancy and related values from a preprocesst file containing
     the nescessary histograms
 
-    TODO: Link DPGPixel Github
+    Use https://github.com/cms-analysis/DPGAnalysis-SiPixelTools/tree/master/HitAnalyzer/test/PixClusterTest.* to preprocess the data samples.
     """
     filename = inputfile.split("/")[-1].split(".")[0]
     logging.info("Processing file: {0}".format(filename))

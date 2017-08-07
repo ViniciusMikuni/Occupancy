@@ -5,7 +5,7 @@ import logging
 
 # activate latex text rendering
 rc('text', usetex=True)
-plt.style.use('seaborn')
+plt.style.use('seaborn') #This can lead to a crash. To review all available styles use `print plt.style.available`.
 SMALL_SIZE = 13
 MEDIUM_SIZE = 14
 BIGGER_SIZE = 16

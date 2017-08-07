@@ -11,8 +11,10 @@ import modules.output
 def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
               fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None,
-              LadderperRunDF = None, LadderRunCompDF = None,
-              cfgname = None, linkTeX = False, linkCSV = False):
+              LadderperRunDF = None, LadderRunCompDF = None, cfgname = None, linkTeX = False, linkCSV = False):
+    """
+    Wrapper for other function defined in this module.
+    """
     from ConfigParser import SafeConfigParser
     logging.info("Generating HTML files")
     ####################################################################
@@ -27,26 +29,21 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     footer = "</body> \n </html> \n"
     htmltemplatetuple = (header, style, footnote, footer)
     ####################################################################
-
-
-
-    ####################################################################
     if makeTables:
         #Check if DFs are passed -> Used to speed up the script
-        #TODO change when zdep runcomp is implemented
         if fullperRunDF is None or fullRunCompDF is None or ZperRunDF is None or LadderperRunDF is None or LadderRunCompDF is None:
             DFstopass = None
         else:
             DFstopass = (fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF, LadderperRunDF, LadderRunCompDF)
         makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
                             htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV)
-    if makeIndex:
+    if makeIndex: #Make a landing page called index.html linking tables and plots (if passed as plottuples)
         makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview, cfgname)
     if makePlotOverview:
         if plottuples is None:
             logging.error("No plotlists and names are given! No adding plots to index.")
         else:
-            for plottuple in plottuples:
+            for plottuple in plottuples: #Go through all groups
                 plotlist, group = plottuple
                 makePlotOverviewFile(titlestring, generaldescription, plotlist, runlist, foldername, group)
 
@@ -78,7 +75,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
         logging.info("Creating folder: {0}".format(foldername))
         os.makedirs(foldername)
 
-    logging.info("Generating HTML files")
+    logging.info("Comparison HTML tables and files")
     #HTML file with "Pix/Lay", "Pix/Det", "Clus/Lay" and "Clus/Det" tables for all layer and all processed run
 
     title = "<h1>{0}</h1>{1}\n".format(titlestring, generaldescription)
@@ -261,19 +258,20 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
     logging.info("Saved: {0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
 
-    blocks = []
-    blocks.append(header)
-    blocks.append(title)
-    blocks.append("<h2>Run comparison - Inner/outer ladder dependency</h2>\n")
-    for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
-        blocks.append("<hr>\n<h3 id={0}>Plots for {0}</h3>\n".format(layer))
-        for plot in generatedplots:
-            filename = plot.split("/")[-1].split(".")[0]
-            if "InnerVsOuter" in filename and layer in filename:
-                blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
-    blocks.append(footer)
-    modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
-    logging.info("Saved: {0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
+    if midfix == "Pix/Lay":
+        blocks = []
+        blocks.append(header)
+        blocks.append(title)
+        blocks.append("<h2>Run comparison - Inner/outer ladder dependency</h2>\n")
+        for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
+            blocks.append("<hr>\n<h3 id={0}>Plots for {0}</h3>\n".format(layer))
+            for plot in generatedplots:
+                filename = plot.split("/")[-1].split(".")[0]
+                if "InnerVsOuter" in filename and layer in filename:
+                    blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+        blocks.append(footer)
+        modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
+        logging.info("Saved: {0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
 
 
 def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True, cfgname = None):
@@ -315,7 +313,7 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
         fullDetplotPixPerDetrefcomp = "Full detector: Plots for <a href=plots_PixperDet_runComp.html#allLayers>all Layers</a>, <a href=plots_PixperDet_runComp.html#Layer1>Layer 1</a>, <a href=plots_PixperDet_runComp.html#Layer2>Layer 2</a>, <a href=plots_PixperDet_runComp.html#Layer3>Layer 3</a>, <a href=plots_PixperDet_runComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per det</mark>)<br>\n"
         fullDetplotClusPerLayrefcomp = "Full detector: Plots for <a href=plots_ClusperLay_runComp.html#allLayers>all Layers</a>, <a href=plots_ClusperLay_runComp.html#Layer1>Layer 1</a>, <a href=plots_ClusperLay_runComp.html#Layer2>Layer 2</a>, <a href=plots_ClusperLay_runComp.html#Layer3>Layer 3</a>, <a href=plots_ClusperLay_runComp.html#Layer4>Layer 4</a> (calculated from <mark>clusters hit per layer</mark>)<br>\n"
         fullDetplotClusPerDetrefcomp = "Full detector: Plots for <a href=plots_ClusperDet_runComp.html#allLayers>all Layers</a>, <a href=plots_ClusperDet_runComp.html#Layer1>Layer 1</a>, <a href=plots_ClusperDet_runComp.html#Layer2>Layer 2</a>, <a href=plots_ClusperDet_runComp.html#Layer3>Layer 3</a>, <a href=plots_ClusperDet_runComp.html#Layer4>Layer 4</a> (calculated from <mark>clusters hit per det</mark>)<br>\n"
-        Laddertablerefcompplots = "Comparison inner and outer ladder: Plots for <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer1>Layer 1</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer2>Layer 2</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer3>Layer 3</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per det</mark>)<br>\n"
+        Laddertablerefcompplots = "Comparison inner and outer ladder: Plots for <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer1>Layer 1</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer2>Layer 2</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer3>Layer 3</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per layer</mark>)<br>\n"
     blocks.append(subheaderRunComp)
     blocks.append(fullDettablerefcomp)
     blocks.append(innerLaddertablerefcomp)
