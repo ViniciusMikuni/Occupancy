@@ -20,13 +20,14 @@ class container:
     Container initialized for a run containing all claculations for the occupancy
     and related values.
     """
-    def __init__(self, name, inputfile, collBunches, instLumi, comments = [""]):
+    def __init__(self, name, inputfile, collBunches, instLumi, comments = [""], nFiles = 1):
         logging.debug("Initializing container for {0} with inputfile {1} and colliding bunches {2}".format(name, inputfile, collBunches))
         self.LayerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
         self.zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
         self.instLumi = instLumi * 1e30
         self.comments = comments
         self.name = name
+        self.nFiles = nFiles
         self.invalidFile = False
         if not os.path.exists(inputfile.replace("~",os.path.expanduser("~"))):
             logging.error("File {0} does not exist. Run will be ignored".format(inputfile))
@@ -217,7 +218,7 @@ class container:
 
     def setInnerOuterLadderDependency(self):
         logging.info("Setting innner/outer ladder dependent values")
-        HitPixInOut = modules.ladder.getPixelHitsInOutladderModules(self.file)
+        HitPixInOut = modules.ladder.getPixelHitsInOutladderModules(self.file, self.nFiles)
         self.nWorkingModulesInOut = modules.ladder.getworkingInOutladderModules(self.file)
 
         for ladder in ["inner","outer"]:
@@ -241,7 +242,7 @@ class container:
 
     def setLadderDependency(self):
         logging.info("Setting ladder dependent values")
-        HitPixLadder = modules.ladder.getPixelHitsladderModules(self.file)
+        HitPixLadder = modules.ladder.getPixelHitsladderModules(self.file, self.nFiles)
         self.nWorkingModulesLadder = modules.ladder.getworkingladderModules(self.file)
 
         for layer in self.LayerNames:

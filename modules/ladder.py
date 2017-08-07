@@ -84,7 +84,7 @@ def getworkingladderModules(inputfile):
 
     return workingmodules
 
-def getPixelHitsladderModules(inputfile):
+def getPixelHitsladderModules(inputfile, nfiles):
     logging.debug("Getting pixel hits per ladder position")
     facets = [12, 28, 44, 64]
 
@@ -102,14 +102,14 @@ def getPixelHitsladderModules(inputfile):
         ladderZero = (facets[ilayer]/2)+1
         for ladder in ["inner","outer"]:
             for module in getLadderidList(layer, ladder):
-                pixelHits[layer][module] = histo.GetBinContent(ladderZero+int(module))
+                pixelHits[layer][module] = histo.GetBinContent(ladderZero+int(module)) / float(nfiles)
 
     return pixelHits
 
-def getPixelHitsInOutladderModules(inputfile):
+def getPixelHitsInOutladderModules(inputfile, nfiles):
     logging.debug("Getting pixel hits for inner and outer ladders")
 
-    pixelhitspermodule = getPixelHitsladderModules(inputfile)
+    pixelhitspermodule = getPixelHitsladderModules(inputfile, nfiles)
 
     pixelHits = {"Layer1": {}, "Layer2": {}, "Layer3": {}, "Layer4": {}}
 

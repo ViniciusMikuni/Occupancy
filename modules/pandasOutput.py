@@ -165,6 +165,7 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
 
         runcompperlayer = makeFullDetectorTables(containerlist, runlist)[1]
         perRunTablesZDependent = makeZdepDetectorTables(containerlist, runlist)[0]
+        rumcompladders = modules.pandasOutput.makeInnerOuterLadderDetectorTables(containerlist, runlist)[1]
         prefix = "RunComp"
         generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer["Layer1"][group]["instLumi"],
                                                                r"average inst. Lumi [cm$^{-2}$s$^{-1}$]",
@@ -202,7 +203,6 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                  "{0}_{1}_density_allLayers".format(prefix, group.replace("/","per")),
                                                                  foldername = foldername, yTitle = r"Hits per module area [cm$^{-2}$]"))
         #Run comparisons
-
         for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
             normrate = runcompperlayer[layer][group]["perAreaNorm"]
             lumiperbx = runcompperlayer[layer][group]["instLumi"]/runcompperlayer["Layer1"][group]["nBunches"]
@@ -239,7 +239,16 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                          "{0}_{2}_LayerVsDet_areaNorm{1}".format(prefix, layer, group.replace("/","per")),
                                                                          plottitle = layer, foldername = foldername,
                                                                          yTitle = r"Hits per module area norm. to inst. luminosity per bunch"))
-        # Z depdentcy
+        # Inner/Outer ladder dependency
+        for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
+            generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"]["inner"][layer]["occupancy"],
+                                                                      rumcompladders["Pix/Lay"]["outer"][layer]["occupancy"],
+                                                                      runcompperlayer[layer]["Pix/Lay"]["occupancy"]],
+                                                                     [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
+                                                                     "InnerVsOuterRunComp_{0}_occupancy".format(layer), plottitle = layer,
+                                                                     foldername = foldername, yTitle = r"Occupancy"))
+
+        # Z dependency
         if group == 'Pix/Lay':
             for values in zip(["occupancy", 'perAreaSec', 'perAreaNorm'],
                               [r"Occupancy",r"hit rate per active module area [cm$^{-2}$s$^{-1}$]",r"Hits per module area norm. to inst. luminosity per bunch"]):

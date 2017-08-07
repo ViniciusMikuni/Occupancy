@@ -103,8 +103,9 @@ def occupancyFromConfig(config):
         collBunches = cfg.getfloat(run, "collidingBunches")
         instLumi =  cfg.getfloat(run, "lumi")
         comment = [cfg.get(run, "comment"),cfg.get(run, "dataset")]
+        nFiles = cfg.getint(run, "nFiles")
 
-        container = classes.container(run, inputfile, collBunches, instLumi, comment)
+        container = classes.container(run, inputfile, collBunches, instLumi, comment, nFiles)
         if not container.invalidFile:
             Resultcontainers[run] = copy(container)
         else:
@@ -115,7 +116,7 @@ def occupancyFromConfig(config):
     for run in invalidruns:
         runstoProcess.remove(run)
     #modules.pandasOutput.getDataFrames(Resultcontainers, runstoProcess)
-    modules.pandasOutput.makeInnerOuterLadderDetectorTables(Resultcontainers, runstoProcess)
+    #modules.pandasOutput.makeInnerOuterLadderDetectorTables(Resultcontainers, runstoProcess)
     #modules.pandasOutput.makeFullDetectorTables(Resultcontainers, runstoProcess, "testing")
     #modules.htmlOutput.makeComparisonFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername)
     generatedplots = []
