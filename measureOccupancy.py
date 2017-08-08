@@ -49,9 +49,9 @@ def main(args):
         logger.info("Using config set in arguments: {0}".format(args.config))
         modules.measurement.occupancyFromConfig(args.config)
 
-    elif args.inputfile is not None and args.collBunch is not None and args.instLumi is not None:
+    elif args.inputfile is not None and args.collBunch is not None and args.instLumi is not None and args.nFiles is not None:
         logger.info("Using file {0} and number of colliding bunches {1}".format(args.inputfile, args.collBunch))
-        modules.measurement.occupancyFromFile(args.inputfile, args.collBunch, args.instLumi)
+        modules.measurement.occupancyFromFile(args.inputfile, args.collBunch, args.instLumi, args.nFiles)
     else:
         pass
     logging.info("Finished script")
@@ -115,14 +115,22 @@ if __name__ == "__main__":
     argumentparser.add_argument(
         "--instLumi",
         action = "store",
-        help = "Average inst. Lumi for the considered LS range",
+        help = "Average inst. Lumi for the considered LS range in e30",
         type=float,
+        default = None,
+    )
+
+    argumentparser.add_argument(
+        "--nFiles",
+        action = "store",
+        help = "Number of files (or jobs) while prepocessing. Only need if preprocessing is done on some kind of batch-system.",
+        type=int,
         default = None,
     )
 
     arguments = argumentparser.parse_args()
 
-    if arguments.config is None and (arguments.inputfile is None and arguments.collBunch is None and arguments.instLumi is None):
+    if arguments.config is None and (arguments.inputfile is None and arguments.collBunch is None and arguments.instLumi is None and arguments.nFiles is None):
         print "Either set config or inputfile and colliding bunches"
         exit()
     #

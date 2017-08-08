@@ -100,11 +100,11 @@ def getPixelHitsladderModules(inputfile, nfiles):
     hpladder4 = inputfile.Get("d/hpladder4id")
 
     hPixHits = [hpladder1, hpladder2, hpladder3, hpladder4]
-
     pixelHits = {"Layer1": {}, "Layer2": {}, "Layer3": {}, "Layer4": {}}
 
     for ilayer, layer in enumerate(["Layer1","Layer2","Layer3","Layer4"]):
         histo = hPixHits[ilayer]
+        #logging.debug("Using histo {0} with type {1}".format(histo, type(histo)))
         ladderZero = (facets[ilayer]/2)+1
         for ladder in ["inner","outer"]:
             for module in getLadderidList(layer, ladder):

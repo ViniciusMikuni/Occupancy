@@ -130,7 +130,7 @@ def occupancyFromConfig(config):
                              makeIndex = True, makeTables = True, makePlotOverview = True,plottuples = generatedplots,
                              exportLaTex = texexport, exportCSV = csvexport)
 
-def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
+def occupancyFromFile(inputfile, collBunchesforRun, instLumi, nFiles):
     """
     Calculate occupancy and related values from a preprocesst file containing
     the nescessary histograms
@@ -140,7 +140,7 @@ def occupancyFromFile(inputfile, collBunchesforRun, instLumi):
     filename = inputfile.split("/")[-1].split(".")[0]
     logging.info("Processing file: {0}".format(filename))
     logging.debug("File location: {0}".format(inputfile))
-    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun, instLumi)
-    Resultcontainer.printValues()
-    #print modules.output.formatContainerFullPixelDetector(Resultcontainer)
-    modules.output.makeTabel(Resultcontainer)
+    Resultcontainer = classes.container(filename, inputfile, collBunchesforRun, instLumi, nFiles = nFiles)
+
+    modules.htmlOutput.makeComparisonFiles("Occupancy monitoring for file {0}".format(filename.split("/")[-1]), "", {"Processed Run": Resultcontainer},
+                                           ["Processed Run"], ".", singlerun = True)
