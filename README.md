@@ -1,7 +1,7 @@
 # Occupancy
 
 Use    
-`python measureOccupancy.py --inputfile=path/to/file --collBunch=1 --instLumi=1`    
+`python measureOccupancy.py --inputfile=path/to/file --collBunch=int --instLumi=int/float --nFiles=int`    
 or   
 `python measureOccupancy.py --config=configs/testconfig.cfg`    
 to run the code.

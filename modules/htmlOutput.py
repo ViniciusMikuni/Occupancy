@@ -71,9 +71,10 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
         footer = "</body> \n </html> \n"
     else:
         header,style, footnote, footer = htmltemplates
-    if not os.path.exists(foldername):
-        logging.info("Creating folder: {0}".format(foldername))
-        os.makedirs(foldername)
+    if foldername is not None:
+        if not os.path.exists(foldername):
+            logging.info("Creating folder: {0}".format(foldername))
+            os.makedirs(foldername)
 
     logging.info("Comparison HTML tables and files")
     #HTML file with "Pix/Lay", "Pix/Det", "Clus/Lay" and "Clus/Det" tables for all layer and all processed run
@@ -178,26 +179,27 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
     else:
         RunCompDFs = DFs[5]
 
-    RunCompDFs = modules.output.makeRunCompDFs(RunCompDFs, layerNames, ["Pix/Lay"], ["inner", "outer"])
+    if RunCompDFs is not None:
+        RunCompDFs = modules.output.makeRunCompDFs(RunCompDFs, layerNames, ["Pix/Lay"], ["inner", "outer"])
 
-    for layer in layerNames:
-        for ladder in ["inner", "outer"]:
-            blocks = []
-            blocks.append(header)
-            blocks.append(style)
-            blocks.append("<h1>Run comparison for {0} modules on {1}</h1>".format(ladder, layer))
-            block = ""
-            for group in ["Pix/Lay"]:
-                block += "<h2>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
-                #if linkTeX:
-                #    block += "<small><a href=tex/fullPerRun_{0}_{1}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"))
-                #if linkCSV:
-                #    block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
-                block += "</h3>\n{0}\n".format(RunCompDFs["{0}_{1}_{2}".format(layer, group, ladder)].to_html())
-            blocks.append(block+"<br>\n")
-            blocks.append(footnote)
-            blocks.append(footer)
-            modules.pandasOutput.writeListToFile(blocks, "{0}/runComparison{1}_{2}.html".format(foldername, layer, ladder))
+        for layer in layerNames:
+            for ladder in ["inner", "outer"]:
+                blocks = []
+                blocks.append(header)
+                blocks.append(style)
+                blocks.append("<h1>Run comparison for {0} modules on {1}</h1>".format(ladder, layer))
+                block = ""
+                for group in ["Pix/Lay"]:
+                    block += "<h2>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
+                    #if linkTeX:
+                    #    block += "<small><a href=tex/fullPerRun_{0}_{1}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"))
+                    #if linkCSV:
+                    #    block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
+                    block += "</h3>\n{0}\n".format(RunCompDFs["{0}_{1}_{2}".format(layer, group, ladder)].to_html())
+                blocks.append(block+"<br>\n")
+                blocks.append(footnote)
+                blocks.append(footer)
+                modules.pandasOutput.writeListToFile(blocks, "{0}/runComparison{1}_{2}.html".format(foldername, layer, ladder))
 
 
 
