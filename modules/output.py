@@ -61,13 +61,13 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
                 logging.info("Creating folder: {0}".format("{0}/{1}".format(foldername, "tex")))
                 os.makedirs("{0}/{1}".format(foldername, "tex"))
             for key in fullPerRunDFs:
-                modules.pandasOutput.writeStringToFile(fullPerRunDFs[key].to_latex(), "{0}/tex/fullPerRun_{1}.tex".format(foldername, key.replace("/","per")))
+                modules.pandasOutput.writeStringToFile(fullPerRunDFs[key].to_latex(), "{0}/tex/fullPerRun_{1}.txt".format(foldername, key.replace("/","per")))
             for key in fullRunCompDFs:
-                modules.pandasOutput.writeStringToFile(fullRunCompDFs[key].to_latex(), "{0}/tex/fullRunComp_{1}.tex".format(foldername, key.replace("/","per")))
+                modules.pandasOutput.writeStringToFile(fullRunCompDFs[key].to_latex(), "{0}/tex/fullRunComp_{1}.txt".format(foldername, key.replace("/","per")))
             for key in zPerRunDFs:
-                modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_latex(), "{0}/tex/zPerRun_{1}.tex".format(foldername, key.replace("/","per")))
+                modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_latex(), "{0}/tex/zPerRun_{1}.txt".format(foldername, key.replace("/","per")))
             for key in InOutPerRunDFs:
-                modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_latex(), "{0}/tex/InOutPerRun_{1}.tex".format(foldername, key.replace("/","per")))
+                modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_latex(), "{0}/tex/InOutPerRun_{1}.txt".format(foldername, key.replace("/","per")))
             pd.set_option('precision',defaultprecision)
         if exportCSV:
             logging.info("CSV export initialized")

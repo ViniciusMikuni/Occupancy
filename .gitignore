@@ -103,6 +103,7 @@ ENV/
 #Stuff
 *.tex
 *.csv
+*.txt
 *.html
 *.png
 *.pdf

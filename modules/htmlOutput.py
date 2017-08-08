@@ -92,7 +92,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
         for group in groups:
             block += "<h3>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
             if linkTeX:
-                block += "<small><a href=tex/fullPerRun_{0}_{1}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"))
+                block += "<small><a href=tex/fullPerRun_{0}_{1}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"))
             if linkCSV:
                 block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
             block += "</h3>\n{0}".format(PerRunDFs["{0}_{1}".format(run, group)].to_html())
@@ -112,7 +112,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
             for group in groups:
                 block = block + "<hr>\n<h3>{0} ({1})   ".format(styleconfig.get("Renaming", group), group)
                 if linkTeX:
-                    block += "<small><a href=tex/fullRunComp_{0}_{1}.tex>LaTeX</a></small> ".format(layer, group.replace("/","per"))
+                    block += "<small><a href=tex/fullRunComp_{0}_{1}.txt>LaTeX</a></small> ".format(layer, group.replace("/","per"))
                 if linkCSV:
                     block += "<small><a href=csv/fullRunComp_{0}_{1}.csv>CSV</a></small> ".format(layer, group.replace("/","per"))
                 block += "</h3>\n{0}".format(RunCompDFs["{0}_{1}".format(layer, group)].to_html())
@@ -138,7 +138,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
             for layer in layerNames:
                 block = block + "<h3>{0}    ".format(layer)
                 if linkTeX:
-                    block += "<small><a href=tex/zPerRun_{0}_{1}_{2}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
+                    block += "<small><a href=tex/zPerRun_{0}_{1}_{2}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
                 if linkCSV:
                     block += "<small><a href=csv/zPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
                 block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
@@ -164,7 +164,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
             for layer in layerNames:
                 block = block + "<h3>{0}    ".format(layer)
                 if linkTeX:
-                    block += "<small><a href=tex/InOutPerRun_{0}_{1}_{2}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
+                    block += "<small><a href=tex/InOutPerRun_{0}_{1}_{2}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
                 if linkCSV:
                     block += "<small><a href=csv/InOutPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
                 block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
@@ -190,7 +190,7 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
             for group in ["Pix/Lay"]:
                 block += "<h2>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
                 #if linkTeX:
-                #    block += "<small><a href=tex/fullPerRun_{0}_{1}.tex>LaTeX</a></small> ".format(run, group.replace("/","per"))
+                #    block += "<small><a href=tex/fullPerRun_{0}_{1}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"))
                 #if linkCSV:
                 #    block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
                 block += "</h3>\n{0}\n".format(RunCompDFs["{0}_{1}_{2}".format(layer, group, ladder)].to_html())
