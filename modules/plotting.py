@@ -1,3 +1,5 @@
+from ConfigParser import SafeConfigParser
+
 import matplotlib.pyplot as plt
 from matplotlib import rc, rcParams
 import os
@@ -17,6 +19,15 @@ plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+styleconfig = SafeConfigParser()
+logging.debug("Loading style config")
+styleconfig.read("configs/style.cfg")
+
+dpi = styleconfig.getint("Plotting","dpi")
+logging.debug("Setting DPI to {0}".format(dpi))
+savepdf = styleconfig.getboolean("Plotting","savepdf")
+logging.debug("Setting pdf output to: {0}".format(savepdf))
 
 def makefolder(foldername):
     if foldername is not None:
@@ -43,7 +54,7 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
 
     returns: file name with path.
     """
-    fig, base = plt.subplots(dpi=200)
+    fig, base = plt.subplots(dpi=dpi)
     if isRunComp:
         fig.subplots_adjust(bottom = 0.16, right = 0.88, left = 0.11, top = 0.92)
     else:
@@ -77,6 +88,9 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
         filename = "plot_{0}_{1}".format(df1yTitle, df2yTitle)
     logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
+    if savepdf:
+        logging.info("Saving file: {0}".format(path+filename+".pdf"))
+        plt.savefig(path+filename+".pdf")
     plt.close(fig)
 
     return path+filename+".png"
@@ -108,7 +122,7 @@ def makecomparionPlot(dfs, titles, filename, colors = ["Default"], plottitle = "
             colors = colors * (len(dfs)%len(colors) + 1)
             logging.warning("Default color palette has {0} colors -> More DF passed. Some lines will have the same color!".format(len(colors)))
 
-    fig, base = plt.subplots(dpi=200)
+    fig, base = plt.subplots(dpi=dpi)
     if isRunComp:
         fig.subplots_adjust(bottom = 0.16, right = 0.88, left = 0.11, top = 0.92)
     else:
@@ -134,6 +148,9 @@ def makecomparionPlot(dfs, titles, filename, colors = ["Default"], plottitle = "
     path = makefolder(foldername)
     logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
+    if savepdf:
+        logging.info("Saving file: {0}".format(path+filename+".pdf"))
+        plt.savefig(path+filename+".pdf")
     plt.close(fig)
 
     return path+filename+".png"
@@ -144,7 +161,7 @@ def plotDataFrame(df, filename, xtitle, ytitle, legendlabels = None, plottitle =
 
     returns: file name with path.
     """
-    fig, base = plt.subplots(dpi=200)
+    fig, base = plt.subplots(dpi=dpi)
     if isRunComp:
         fig.subplots_adjust(bottom = 0.16, right = 0.88, left = 0.11, top = 0.92)
     else:
@@ -162,6 +179,9 @@ def plotDataFrame(df, filename, xtitle, ytitle, legendlabels = None, plottitle =
     path = makefolder(foldername)
     logging.info("Saving file: {0}".format(path+filename+".png"))
     plt.savefig(path+filename+".png")
+    if savepdf:
+        logging.info("Saving file: {0}".format(path+filename+".pdf"))
+        plt.savefig(path+filename+".pdf")
     plt.close(fig)
 
     return path+filename+".png"

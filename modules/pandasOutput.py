@@ -196,8 +196,9 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
             normrate = runcompperlayer[layer][group]["perAreaNorm"]
             lumiperbx = runcompperlayer[layer][group]["instLumi"]/runcompperlayer["Layer1"][group]["nBunches"]
 
-            generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'perAreaNorm', lumiperbx, r'LumiperBX [cm$^{-2}$s$^{-1}$]',
-                                                                   "{0}_{2}_perAreaNorm{1}".format(prefix, layer, group.replace("/","per")),
+            generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'Hits per module area norm. to inst. luminosity per bunch',
+                                                                   lumiperbx, r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
+                                                                   "{0}_{2}_perAreaNorm_{1}".format(prefix, layer, group.replace("/","per")),
                                                                    layer, foldername))
             doplots = False
             if group == "Pix/Lay":
@@ -255,6 +256,17 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                          [r"Inner Ladder", r"Outer Ladder",r"Full layer"],
                                                                          "InnerVsOuterRunComp_{0}_nhit".format(layer), plottitle = layer,
                                                                          foldername = foldername, yTitle = r"Number of pixels hit"))
+            for ladder in ["inner", "outer"]:
+                for plot, title in [("nhit", r"Number of pixels hit"),
+                                    ("perAreaNorm", r"Hits per module area norm. to inst. luminosity per bunch"),
+                                    ("occupancy", r"Occupancy")]:
+                    generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"][ladder]["Layer1"][plot],
+                                                                              rumcompladders["Pix/Lay"][ladder]["Layer2"][plot],
+                                                                              rumcompladders["Pix/Lay"][ladder]["Layer3"][plot],
+                                                                              rumcompladders["Pix/Lay"][ladder]["Layer4"][plot]],
+                                                                             [r"Layer1", r"Layer2", r"Layer3", r"Layer4"],
+                                                                             "{0}RunComp_{1}_allLayers".format(ladder, plot),
+                                                                             foldername = foldername, yTitle = title))
 
         # Z dependency
         if group == 'Pix/Lay':

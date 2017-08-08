@@ -43,3 +43,15 @@ dataset=string
 * __nFiles__ is needed for some histograms that are normalized to the number of processed events in preprocessing. If this is done on a batch system the normalization is not valid anymore after _hadd_-ing the files.
 
 If a config option is desired to be empty (for example if the section is a placeholder with empty file option), also remove the __=__ sign.
+
+
+## Plotting
+In `configs/style` some option for plotting can be set:
+
+```
+[Plotting]
+dpi=int
+savepdf=bool
+```
+
+For fast code execution __savepdf__ should be set to _False_ and __dpi__ to _200 or lower_.
