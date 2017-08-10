@@ -99,6 +99,7 @@ def occupancyFromConfig(config):
     foldername = cfg.get("General","foldername")
     texexport = cfg.getboolean("General","latexexport")
     csvexport = cfg.getboolean("General","csvexport")
+    cfgexport = cfg.getboolean("General","cfgexport")
     invalidruns = []
     for run in runstoProcess:
         logging.info("Processing section {1} from config {0}".format(config, run))
@@ -122,13 +123,15 @@ def occupancyFromConfig(config):
         runstoProcess.remove(run)
 
     generatedplots = []
-    for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
-        generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)
-        generatedplots.append((generatedfiles , group))
+    makeplots = False
+    if makeplots:
+        for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
+            generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)
+            generatedplots.append((generatedfiles , group))
 
     modules.output.makeFiles(generaltitle, generaldesc, Resultcontainers, runstoProcess, foldername, config,
-                             makeIndex = True, makeTables = True, makePlotOverview = True,plottuples = generatedplots,
-                             exportLaTex = texexport, exportCSV = csvexport)
+                             makeIndex = True, makeTables = True, makePlotOverview = makeplots, plottuples = generatedplots,
+                             exportLaTex = texexport, exportCSV = csvexport, exportCFG = cfgexport)
 
 def occupancyFromFile(inputfile, collBunchesforRun, instLumi, nFiles):
     """

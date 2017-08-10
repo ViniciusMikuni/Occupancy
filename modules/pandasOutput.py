@@ -146,7 +146,7 @@ def makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun = False
                     runcomparisonperLayer[group][ladder][layer] = pd.DataFrame(slices[group][ladder][layer]).transpose()
     else:
         runcomparisonperLayer = None
-        
+
     return runtables, runcomparisonperLayer
 
 def makeRunComparisonPlots(containerlist, runlist, foldername, group):
@@ -165,6 +165,12 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                runcompperlayer["Layer1"][group]["nBunches"],
                                                                "Number of colliding bunches",
                                                                "{0}LumiVsnBunches_allLayers".format(prefix),
+                                                               "", foldername))
+        generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer["Layer1"][group]["instLumi"],
+                                                               r"average inst. Lumi [cm$^{-2}$s$^{-1}$]",
+                                                               runcompperlayer["Layer1"][group]["instLumi"]/runcompperlayer["Layer1"][group]["nBunches"],
+                                                               r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
+                                                               "{0}LumiVsLumiperBX_allLayers".format(prefix),
                                                                "", foldername))
         if group.startswith("Pix"):
             generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer["Layer1"][group]["occupancy"],
@@ -203,6 +209,21 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
             generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'Hits per module area norm. to inst. luminosity per bunch',
                                                                    lumiperbx, r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
                                                                    "{0}_{2}_perAreaNorm_{1}".format(prefix, layer, group.replace("/","per")),
+                                                                   layer, foldername))
+            generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["perAreaSec"],
+                                                                   r'hit rate per active module area [cm$^{-2}$s$^{-1}$]',
+                                                                   lumiperbx, r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
+                                                                   "{0}_{2}_perAreaSec_{1}".format(prefix, layer, group.replace("/","per")),
+                                                                   layer, foldername))
+            generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["perAreaSec"],
+                                                                   r'hit rate per active module area [cm$^{-2}$s$^{-1}$]',
+                                                                   runcompperlayer[layer][group]["instLumi"], r'average inst. lumi [cm$^{-2}$s$^{-1}$]',
+                                                                   "{0}_{2}_perAreaSec_Lumi_{1}".format(prefix, layer, group.replace("/","per")),
+                                                                   layer, foldername))
+            generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["perAreaSec"],
+                                                                   r'hit rate per active module area [cm$^{-2}$s$^{-1}$]',
+                                                                   runcompperlayer[layer][group]["nBunches"], r"Number of colliding bunches",
+                                                                   "{0}_{2}_perAreaSec_nBX_{1}".format(prefix, layer, group.replace("/","per")),
                                                                    layer, foldername))
             doplots = False
             if group == "Pix/Lay":
@@ -263,7 +284,8 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
             for ladder in ["inner", "outer"]:
                 for plot, title in [("nhit", r"Number of pixels hit"),
                                     ("perAreaNorm", r"Hits per module area norm. to inst. luminosity per bunch"),
-                                    ("occupancy", r"Occupancy")]:
+                                    ("occupancy", r"Occupancy"),
+                                    ("perAreaSec", r"hit rate per active module area [cm$^{-2}$s$^{-1}$]")]:
                     generatedplots.append(modules.plotting.makecomparionPlot([rumcompladders["Pix/Lay"][ladder]["Layer1"][plot],
                                                                               rumcompladders["Pix/Lay"][ladder]["Layer2"][plot],
                                                                               rumcompladders["Pix/Lay"][ladder]["Layer3"][plot],

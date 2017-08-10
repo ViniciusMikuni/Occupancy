@@ -16,8 +16,13 @@ import modules.pandasOutput
 
 def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername, config,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
-              exportLaTex = False, exportCSV = False):
+              exportLaTex = False, exportCSV = False, exportCFG = False):
     logging.info("Starting file export")
+
+    if not os.path.exists(foldername):
+        logging.info("Creating folder: {0}".format(foldername))
+        os.makedirs(foldername)
+
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
     groups = ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]
     ###############################################################
@@ -25,7 +30,7 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     fullperRunDF, fullRunCompDF = modules.pandasOutput.makeFullDetectorTables(containerlist, runlist)
     ZperRunDF, ZRunCompDF = modules.pandasOutput.makeZdepDetectorTables(containerlist, runlist)
     InOutperRunDF, InOutRunCompDF = modules.pandasOutput.makeInnerOuterLadderDetectorTables(containerlist, runlist)
-    #Getting Tables
+    #Getting Tables --> NOTE The (ordered)Dics have keys with layer_group_? etc.
     logging.debug("Getting perRun tables for full detector")
     fullPerRunDFs = makePerRunDFs(fullperRunDF, runlist, groups)
     logging.debug("Getting RunComp tables for full detector")
@@ -34,12 +39,16 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
     zPerRunDFs = makePerRunDFs(ZperRunDF, runlist, ["Pix/Lay"], layerNames)
     logging.debug("Getting perRun tables for inner/outer ladder partial detector")
     InOutPerRunDFs = makePerRunDFs(InOutperRunDF, runlist, ["Pix/Lay"], layerNames)
-
+    logging.debug("Getting RunComp tables for inner/outer ladder partial detector")
+    InnerRunCompDFs =  makeRunCompDFs(InOutRunCompDF, layerNames, ["Pix/Lay"], ["inner"])
+    #print InnerRunCompDFs
+    OuterRunCompDFs = makeRunCompDFs(InOutRunCompDF, layerNames, ["Pix/Lay"], ["outer"])
     # Style config
     from ConfigParser import SafeConfigParser
     styleconfig = SafeConfigParser()
     logging.debug("Loading style config")
     styleconfig.read("configs/style.cfg")
+
 
     #Copy cfg file to output directory:
     copy2(config, foldername)
@@ -50,7 +59,7 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
         modules.htmlOutput.makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
                                      makeIndex, makeTables, makePlotOverview, plottuples, fullperRunDF, fullRunCompDF,
                                      ZperRunDF, ZRunCompDF, InOutperRunDF, InOutRunCompDF,
-                                     cfgname = configname, linkTeX = exportLaTex, linkCSV = exportCSV)
+                                     cfgname = configname, linkTeX = exportLaTex, linkCSV = exportCSV, linkCFG = exportCFG)
 
     if exportLaTex or exportCSV:
         defaultprecision = pd.get_option('precision')
@@ -68,6 +77,10 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
                 modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_latex(), "{0}/tex/zPerRun_{1}.txt".format(foldername, key.replace("/","per")))
             for key in InOutPerRunDFs:
                 modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_latex(), "{0}/tex/InOutPerRun_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in InnerRunCompDFs:
+                modules.pandasOutput.writeStringToFile(InnerRunCompDFs[key].to_latex(), "{0}/tex/partialRunComp_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in OuterRunCompDFs:
+                modules.pandasOutput.writeStringToFile(OuterRunCompDFs[key].to_latex(), "{0}/tex/partialRunComp_{1}.txt".format(foldername, key.replace("/","per")))
             pd.set_option('precision',defaultprecision)
         if exportCSV:
             logging.info("CSV export initialized")
@@ -82,6 +95,27 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
                 modules.pandasOutput.writeStringToFile(zPerRunDFs[key].to_csv(sep=";"), "{0}/csv/zPerRun_{1}.csv".format(foldername, key.replace("/","per")))
             for key in InOutPerRunDFs:
                 modules.pandasOutput.writeStringToFile(InOutPerRunDFs[key].to_csv(sep=";"), "{0}/csv/InOutPerRun_{1}.csv".format(foldername, key.replace("/","per")))
+            for key in InnerRunCompDFs:
+                modules.pandasOutput.writeStringToFile(InnerRunCompDFs[key].to_csv(sep=";"), "{0}/csv/partialRunComp_{1}.csv".format(foldername, key.replace("/","per")))
+            for key in OuterRunCompDFs:
+                modules.pandasOutput.writeStringToFile(OuterRunCompDFs[key].to_csv(sep=";"), "{0}/csv/partialRunComp_{1}.csv".format(foldername, key.replace("/","per")))
+        if exportCFG:
+            logging.info("CFG export initialized (SaveConfigParser)")
+            if not os.path.exists("{0}/{1}".format(foldername, "cfg")):
+                logging.info("Creating folder: {0}".format("{0}/{1}".format(foldername, "cfg")))
+                os.makedirs("{0}/{1}".format(foldername, "cfg"))
+            for key in fullPerRunDFs:
+                converDFtoCFG(fullPerRunDFs[key], "{0}/cfg/fullPerRun_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in fullRunCompDFs:
+                converDFtoCFG(fullRunCompDFs[key], "{0}/cfg/fullRunComp_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in zPerRunDFs:
+                converDFtoCFG(zPerRunDFs[key], "{0}/cfg/zPerRun_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in InOutPerRunDFs:
+                converDFtoCFG(InOutPerRunDFs[key], "{0}/cfg/InOutPerRun_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in InnerRunCompDFs:
+                converDFtoCFG(InnerRunCompDFs[key], "{0}/cfg/partialRunComp_{1}.txt".format(foldername, key.replace("/","per")))
+            for key in OuterRunCompDFs:
+                converDFtoCFG(OuterRunCompDFs[key], "{0}/cfg/partialRunComp_{1}.txt".format(foldername, key.replace("/","per")))
 
 def makePerRunDFs(inputdf, runs, groups, layers = None):
     retDFs = OrderedDict([])
@@ -104,3 +138,16 @@ def makeRunCompDFs(inputdf, layers, groups, ladders = None):
                 for ladder in ladders:
                     retDFs.update({"{0}_{1}_{2}".format(layer, group, ladder) : inputdf[group][ladder][layer]})
     return retDFs
+
+def converDFtoCFG(df, filename):
+    from ConfigParser import SafeConfigParser
+
+    cfgout = SafeConfigParser()
+
+    for row in df.iterrows():
+        cfgout.add_section(row[0])
+        for key in row[1].keys():
+            cfgout.set(row[0], key, str(row[1][key]))
+
+    with open(filename, 'wb') as configfile:
+        cfgout.write(configfile)

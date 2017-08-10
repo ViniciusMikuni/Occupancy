@@ -20,12 +20,16 @@ The configs used for config mode need to contain a __General__ section and one o
     title=string
     description=string
     foldername=string
+    latexexport=bool
+    csvexport=bool
+    cfgexport=bool
 
 * __title__ will be displayed as `<h1>` in the top of the output HTML file
 * __description__  will be displayed as subtitle in the output HTML file
 * __foldername__ is used as name of the folder containing the output files. If not present it will be created
 * __latexexport__ if _True_, all tables will be exported in LaTex and saved in _foldername_/tex
-* __csvexport=True__ if _True_, all tables will be exported in CSV (separator ;) and saved in _foldername_/csv
+* __csvexport__ if _True_, all tables will be exported in CSV (separator ;) and saved in _foldername_/csv
+* __cfgexport__ if _True_, all tables will be exported as config file written with the python config parser and saved in _foldername_/cfg
 
 ```
 [RunName]

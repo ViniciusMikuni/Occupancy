@@ -61,7 +61,13 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
         fig.subplots_adjust(bottom = 0.1, right = 0.88, left = 0.11, top = 0.92)
     second = base.twinx()
 
-    base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    Preliminary = False
+
+    if Preliminary is True:
+        base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    else:
+        base.text(0.125, 1.005, r"{\huge\textbf{CMS}}", transform=base.transAxes)
+        base.text(0.125, 0.96, r"\textit{Work in Progress}", transform=base.transAxes)
 
     color1 = get_colors()[0]
     color2 = get_colors()[2]
@@ -128,7 +134,13 @@ def makecomparionPlot(dfs, titles, filename, colors = ["Default"], plottitle = "
     else:
         fig.subplots_adjust(bottom = 0.1, right = 0.88, left = 0.11, top = 0.92)
 
-    base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    Preliminary = False
+
+    if Preliminary is True:
+        base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    else:
+        base.text(0.125, 1.005, r"{\huge\textbf{CMS}}", transform=base.transAxes)
+        base.text(0.125, 0.96, r"\textit{Work in Progress}", transform=base.transAxes)
 
     for dftuple in zip(dfs, titles, colors):
         dftuple[0].plot(ax = base, color = dftuple[2], label = dftuple[1])
@@ -167,7 +179,13 @@ def plotDataFrame(df, filename, xtitle, ytitle, legendlabels = None, plottitle =
     else:
         fig.subplots_adjust(bottom = 0.1, right = 0.88, left = 0.11, top = 0.92)
 
-    base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    Preliminary = False
+
+    if Preliminary is True:
+        base.text(0.125, 1.015, r"{\huge\textbf{CMS}} {\textit{Preliminary}}", transform=base.transAxes)
+    else:
+        base.text(0.125, 1.005, r"{\huge\textbf{CMS}}", transform=base.transAxes)
+        base.text(0.125, 0.96, r"\textit{Work in Progress}", transform=base.transAxes)
 
     base.set_ylabel(ytitle)
     base.set_xlabel(xtitle)

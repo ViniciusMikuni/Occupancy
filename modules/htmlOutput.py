@@ -11,7 +11,8 @@ import modules.output
 def makeFiles(titlestring, generaldescription, containerlist, runlist, foldername,
               makeIndex = True, makeTables = True, makePlotOverview = True, plottuples = None,
               fullperRunDF = None, fullRunCompDF = None, ZperRunDF = None, ZRunCompDF = None,
-              LadderperRunDF = None, LadderRunCompDF = None, cfgname = None, linkTeX = False, linkCSV = False):
+              LadderperRunDF = None, LadderRunCompDF = None, cfgname = None,
+              linkTeX = False, linkCSV = False, linkCFG = False):
     """
     Wrapper for other function defined in this module.
     """
@@ -36,7 +37,7 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
         else:
             DFstopass = (fullperRunDF, fullRunCompDF, ZperRunDF, ZRunCompDF, LadderperRunDF, LadderRunCompDF)
         makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
-                            htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV)
+                            htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV, linkCFG = linkCFG)
     if makeIndex: #Make a landing page called index.html linking tables and plots (if passed as plottuples)
         makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview, cfgname)
     if makePlotOverview:
@@ -49,7 +50,7 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
 
 
 def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
-                        singlerun = False, htmltemplates = None, DFs = None, linkTeX = False, linkCSV = False):
+                        singlerun = False, htmltemplates = None, DFs = None, linkTeX = False, linkCSV = False, linkCFG = False):
     logging.info("Processing runs and generate HTML files")
     from ConfigParser import SafeConfigParser
     styleconfig = SafeConfigParser()
@@ -96,6 +97,8 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                 block += "<small><a href=tex/fullPerRun_{0}_{1}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"))
             if linkCSV:
                 block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
+            if linkCFG:
+                block += "<small><a href=cfg/fullPerRun_{0}_{1}.txt>CFG</a></small> ".format(run, group.replace("/","per"))
             block += "</h3>\n{0}".format(PerRunDFs["{0}_{1}".format(run, group)].to_html())
         blocks.append(block+"<br>\n")
     blocks.append(footnote)
@@ -116,6 +119,8 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                     block += "<small><a href=tex/fullRunComp_{0}_{1}.txt>LaTeX</a></small> ".format(layer, group.replace("/","per"))
                 if linkCSV:
                     block += "<small><a href=csv/fullRunComp_{0}_{1}.csv>CSV</a></small> ".format(layer, group.replace("/","per"))
+                if linkCFG:
+                    block += "<small><a href=cfg/fullRunComp_{0}_{1}.txt>CFG</a></small> ".format(layer, group.replace("/","per"))
                 block += "</h3>\n{0}".format(RunCompDFs["{0}_{1}".format(layer, group)].to_html())
             blocks.append(block+"<br>\n")
             blocks.append(footnote)
@@ -142,6 +147,8 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                     block += "<small><a href=tex/zPerRun_{0}_{1}_{2}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
                 if linkCSV:
                     block += "<small><a href=csv/zPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
+                if linkCFG:
+                    block += "<small><a href=cfg/zPerRun_{0}_{1}_{2}.txt>CFG</a></small> ".format(run, group.replace("/","per"), layer)
                 block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
             blocks.append(block+"<br>\n")
         blocks.append(footnote)
@@ -168,6 +175,8 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                     block += "<small><a href=tex/InOutPerRun_{0}_{1}_{2}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"), layer)
                 if linkCSV:
                     block += "<small><a href=csv/InOutPerRun_{0}_{1}_{2}.csv>CSV</a></small> ".format(run, group.replace("/","per"), layer)
+                if linkCFG:
+                    block += "<small><a href=cfg/InOutPerRun_{0}_{1}_{2}.txt>CFG</a></small> ".format(run, group.replace("/","per"), layer)
                 block += "</h3>\n{0}".format(perRunDFs["{0}_{1}_{2}".format(run, group, layer)].to_html())
             blocks.append(block+"<br>\n")
         blocks.append(footnote)
@@ -191,10 +200,12 @@ def makeComparisonFiles(titlestring, generaldescription, containerlist, runlist,
                 block = ""
                 for group in ["Pix/Lay"]:
                     block += "<h2>{0} ({1})    ".format(styleconfig.get("Renaming", group), group)
-                    #if linkTeX:
-                    #    block += "<small><a href=tex/fullPerRun_{0}_{1}.txt>LaTeX</a></small> ".format(run, group.replace("/","per"))
-                    #if linkCSV:
-                    #    block += "<small><a href=csv/fullPerRun_{0}_{1}.csv>CSV</a></small> ".format(run, group.replace("/","per"))
+                    if linkTeX:
+                        block += "<small><a href=tex/partialRunComp_{0}_{1}_{2}.txt>LaTeX</a></small> ".format(layer, group.replace("/","per"), ladder)
+                    if linkCSV:
+                        block += "<small><a href=csv/partialRunComp_{0}_{1}_{2}.csv>CSV</a></small> ".format(layer, group.replace("/","per"), ladder)
+                    if linkCFG:
+                        block += "<small><a href=cfg/partialRunComp_{0}_{1}_{2}.txt>CFG</a></small> ".format(layer, group.replace("/","per"), ladder)
                     block += "</h3>\n{0}\n".format(RunCompDFs["{0}_{1}_{2}".format(layer, group, ladder)].to_html())
                 blocks.append(block+"<br>\n")
                 blocks.append(footnote)
@@ -218,6 +229,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     header = "<!DOCTYPE html> \n <html> \n <body> \n"
     title = "<h1>{0}</h1>{1}\n".format(titlestring, generaldescription)
     footer = "</body> \n </html> \n"
+    footnote = "<br><br><small>Generated: {0} by K. Schweiger, korbinian.schweiger@cern.ch</small>\n".format(datetime.now())
     #Single Runs
     blocks = []
     blocks.append(header)
@@ -236,6 +248,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
         if nfiles > 0:
             blocks = blocks + runblock
             runsadded += 1
+    blocks.append(footnote)
     blocks.append(footer)
     if runsadded > 0:
         modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_perRun.html".format(foldername, midfix.replace("/","per")))
@@ -256,6 +269,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
             filename = plot.split("/")[-1].split(".")[0]
             if layer in filename and not "InnerVsOuter" in filename:
                 blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+    blocks.append(footnote)
     blocks.append(footer)
     modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
     logging.info("Saved: {0}/plots_{1}_runComp.html".format(foldername, midfix.replace("/","per")))
@@ -272,6 +286,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
                 filename = plot.split("/")[-1].split(".")[0]
                 if "InnerVsOuter" in filename and layer in filename:
                     blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+        blocks.append(footnote)
         blocks.append(footer)
         modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
         logging.info("Saved: {0}/plots_{1}_InnerVsOuterRunComp.html".format(foldername, midfix.replace("/","per")))
@@ -287,6 +302,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
                 filename = plot.split("/")[-1].split(".")[0]
                 if filename.startswith("{0}RunComp".format(ladder)):
                     blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
+        blocks.append(footnote)
         blocks.append(footer)
         modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_InnerOuterLadderRunComp.html".format(foldername, midfix.replace("/","per")))
         logging.info("Saved: {0}/plots_{1}_InnerOuterLadderRunComp.html".format(foldername, midfix.replace("/","per")))

@@ -108,3 +108,4 @@ ENV/
 *.png
 *.pdf
 .DS_Store
+*/cfg/*
