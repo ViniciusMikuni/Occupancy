@@ -35,18 +35,18 @@ def cmstext(AdditionalText):
 
     simul, cms = None, None
     if AdditionalText == "WIPSimul":
-        simul = ROOT.TLatex(0.18, 0.908, '#scale[1.2]{#bf{CMS}} #it{simulation}')
+        simul = ROOT.TLatex(0.18, 0.958, '#scale[1.2]{#bf{CMS}} #it{simulation}')
     if AdditionalText == "Prelim":
-        simul = ROOT.TLatex(0.18, 0.908, '#scale[1.2]{#bf{CMS}} #it{Preliminary}')
+        simul = ROOT.TLatex(0.18, 0.958, '#scale[1.2]{#bf{CMS}} #it{Preliminary}')
     if AdditionalText == "Wip":
-        simul = ROOT.TLatex(0.18, 0.908, '#scale[1.2]{#bf{CMS}}')
+        simul = ROOT.TLatex(0.18, 0.958, '#scale[1.2]{#bf{CMS}}')
     simul.SetTextFont(42)
     simul.SetTextSize(0.045)
     simul.SetNDC()
 
 
     if AdditionalText.startswith("Wip"):
-        cms = ROOT.TLatex(0.18, 0.86, ' #it{work in progress}')
+        cms = ROOT.TLatex(0.18, 0.915, '#it{work in progress}')
         cms.SetTextFont(42)
         cms.SetTextSize(0.045)
         cms.SetNDC()
@@ -98,29 +98,41 @@ def makeGraph(plotvalues, ytitle, legendnames, cmslabel):
         graphs.append(graph)
 
     c1 = ROOT.TCanvas("c1","c1",800,640)
+    c1.SetTopMargin(0.05)
+    c1.SetRightMargin(0.05)
+    c1.SetBottomMargin(0.15)
     c1.cd()
+    c1.SetGrid()
 
     #SetLogy()
 
-    leg = ROOT.TLegend(0.7,0.5,0.9,0.7)
+    leg = ROOT.TLegend(0.75,0.45,0.95,0.7)
     leg.SetBorderSize(0)
+    leg.SetFillStyle(0)
     leg.SetTextFont(42)
     for igraph, graph in enumerate(graphs):
         logging.debug("Adding graph {0}".format(igraph))
         if igraph == 0:
             graph.Draw("AP")
             graph.GetHistogram().SetMinimum(0.0 )
-            graph.GetXaxis().SetLimits(-0.5, npoints-1+0.5)
+            graph.GetHistogram().SetMaximum(graph.GetHistogram().GetMaximum()*1.1)
+            graph.GetXaxis().SetLimits(-1, npoints)
+            graph.GetXaxis().SetLabelOffset(0.04)
+            graph.GetXaxis().SetNdivisions(-(npoints+1))
             graph.SetTitle("")
             if styleconfig.has_option("Renaming", ytitle):
                 ytitle = styleconfig.get("Renaming", ytitle)
             graph.GetYaxis().SetTitle(ytitle)
             graph.GetYaxis().SetTitleOffset(graph.GetYaxis().GetTitleOffset() * 2)
             xax = graph.GetXaxis()
-            for i in range(npoints):
-                binIndex = xax.FindBin(i)
-                xax.SetBinLabel(binIndex, str(xLabelText[i]))
-            graph.GetXaxis().LabelsOption("v");
+            #xax
+            xLabelText = [""," "] + xLabelText + [" "]
+            for i in range(npoints+3):
+                #binIndex = xax.FindBin(i)
+                binIndex = i
+                xax.ChangeLabel(binIndex,45,-1,-1,-1,-1,str(xLabelText[i]))
+                #xax.SetBinLabel(binIndex, str(xLabelText[i]))
+            #graph.GetXaxis().LabelsOption("u");
             graph.GetXaxis().SetTitle()
             graph.Draw("AP")
         else:
