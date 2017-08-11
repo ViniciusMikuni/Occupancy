@@ -59,3 +59,12 @@ savepdf=bool
 ```
 
 For fast code execution __savepdf__ should be set to _False_ and __dpi__ to _200 or lower_.
+
+### ROOTplotting
+Using `ROOTplotting.py` the output of `measureOccupancy.py` can be plotted as ROOT TGraph. Use the __cfgexport__ option in the general section of you config to get the tables in a python readable config. The configs are used for the plotting.
+
+#### Required arguments and usage
+`python ROOTplotting.py --config [config.cfg ....] --names [legendtext ....] --parameter [internalValueName]`   
+
+* The __--config__ and __--names__ arguments can be lists (separated with space) and need to be the same length. If only one config is passed, names can also be skipped.
+* __--parameter__ need to be one of the options in the config used for plotting.
