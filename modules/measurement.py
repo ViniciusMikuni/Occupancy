@@ -78,7 +78,7 @@ def calculateCommonValues(nPerModule, collBunches, RevFrequ, ActiveModArea, Pixp
 
     return perArea, perAreaSec
 
-def occupancyFromConfig(config):
+def occupancyFromConfig(config, plotting = False):
     """
     Calculate occupancy and related values from a config defining files, nBunches,... . See README.md for detailed information.
 
@@ -123,7 +123,7 @@ def occupancyFromConfig(config):
         runstoProcess.remove(run)
 
     generatedplots = []
-    makeplots = False
+    makeplots = not plotting
     if makeplots:
         for group in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
             generatedfiles = modules.pandasOutput.makeRunComparisonPlots(Resultcontainers, runstoProcess, foldername, group)

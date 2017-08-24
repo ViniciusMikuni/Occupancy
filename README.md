@@ -1,10 +1,12 @@
 # Occupancy
 
 Use    
-`python measureOccupancy.py --inputfile=path/to/file --collBunch=int --instLumi=int/float --nFiles=int`    
+`python measureOccupancy.py --inputfile=path/to/file --collBunch=int --instLumi=int/float --nFiles=int`  (Single Mode)  
 or   
-`python measureOccupancy.py --config=configs/testconfig.cfg`    
+`python measureOccupancy.py --config=configs/testconfig.cfg`  (Config Mode)   
 to run the code.
+
+Add the flag __--skipplots__ (without argument) if the plotting module should be skipped. Plots are only implemented for config mode.
 
 ## Requirements
 The following python modules are necessary:
@@ -35,7 +37,6 @@ The configs used for config mode need to contain a __General__ section and one o
 [RunName]
 collidingBunches=float/int
 lumi=float
-nLS=int
 file=string
 nFiles=int
 comment=string

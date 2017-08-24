@@ -47,7 +47,7 @@ def main(args):
 
     if args.config is not None:
         logger.info("Using config set in arguments: {0}".format(args.config))
-        modules.measurement.occupancyFromConfig(args.config)
+        modules.measurement.occupancyFromConfig(args.config, args.skipplots)
 
     elif args.inputfile is not None and args.collBunch is not None and args.instLumi is not None and args.nFiles is not None:
         logger.info("Using file {0} and number of colliding bunches {1}".format(args.inputfile, args.collBunch))
@@ -128,6 +128,14 @@ if __name__ == "__main__":
         default = None,
     )
 
+    argumentparser.add_argument(
+        "--skipplots",
+        action = "store_true",
+        help = "Call without argument! If called the plotting will be skipped in config mode.",
+    )
+
+
+
     arguments = argumentparser.parse_args()
 
     if arguments.config is None and (arguments.inputfile is None and arguments.collBunch is None and arguments.instLumi is None and arguments.nFiles is None):
@@ -136,4 +144,5 @@ if __name__ == "__main__":
     #
     ##############################################################################################################
     ##############################################################################################################
+
     main(arguments)

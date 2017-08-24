@@ -261,7 +261,7 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
     blocks.append("<hr>\n<h3 id=allLayers>Plots for all layers</h3>\n")
     for plot in generatedplots:
         filename = plot.split("/")[-1].split(".")[0]
-        if "allLayers" in filename:
+        if "allLayers" in filename and not("inner" in filename or "outer" in filename):
             blocks.append('<img src="{0}" alt="{0}" style="width:800px;height:600px;">\n'.format(plot[len(foldername)+1::]))
     for layer in ["Layer1", "Layer2", "Layer3", "Layer4"]:
         blocks.append("<hr>\n<h3 id={0}>Plots for {0}</h3>\n".format(layer))
