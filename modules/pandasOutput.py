@@ -317,13 +317,15 @@ def getcommentDF(containerlist, runlist):
     nbunches = []
     das = []
     lumis = []
+    fills = []
     modrunlist = []
     for run in runlist:
         comments.append(containerlist[run].comments[2])
         nbunches.append(containerlist[run].collBunches)
         das.append(containerlist[run].comments[1])
         lumis.append(containerlist[run].instLumi)
+        fills.append(containerlist[run].fill)
         modrunlist.append("Run {0}".format(run))
-    df = pd.DataFrame({"Comment" :comments, "coll. bunches" : nbunches, "av. inst. lumi" : lumis, "Dataset" : das}, index=modrunlist)
+    df = pd.DataFrame({"Comment" :comments, "coll. bunches" : nbunches, "av. inst. lumi" : lumis, "Dataset" : das, "Fill" : fills}, index=modrunlist)
     #df.columns = ["Comment"]
     return df

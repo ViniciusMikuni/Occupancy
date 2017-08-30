@@ -39,6 +39,7 @@ collidingBunches=float/int
 lumi=float
 file=string
 nFiles=int
+fill=int
 comment=string
 dataset=string
 ```
@@ -46,7 +47,7 @@ dataset=string
 * __collidingBunches__ and __lumi__ are used for calculations and can be obtained form WBM. __lumi__ is the average inst. luminosity in the considered LS range in e30 cm^-2 s^-1.
 * __comment__ and __dataset__ are displayed in the output HTML files
 * __nFiles__ is needed for some histograms that are normalized to the number of processed events in preprocessing. If this is done on a batch system the normalization is not valid anymore after _hadd_-ing the files.
-
+* __fill__ will be displayed in a separate overview and is not necessary for any calculations (can be left without value)
 If a config option is desired to be empty (for example if the section is a placeholder with empty file option), also remove the __=__ sign.
 
 

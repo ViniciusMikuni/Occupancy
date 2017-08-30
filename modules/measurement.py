@@ -109,10 +109,11 @@ def occupancyFromConfig(config, plotting = False):
             inputfile = ""
         collBunches = cfg.getfloat(run, "collidingBunches")
         instLumi =  cfg.getfloat(run, "lumi")
+        fillnr =  cfg.getint(run, "fill")
         comment = ["Colliding bunches: {0}".format(int(cfg.getfloat(run, "collidingBunches"))) ,cfg.get(run, "dataset"), cfg.get(run, "comment")]
         nFiles = cfg.getint(run, "nFiles")
 
-        container = classes.container(run, inputfile, collBunches, instLumi, comment, nFiles)
+        container = classes.container(run, inputfile, collBunches, instLumi, comment, nFiles, fillnr)
         if not container.invalidFile:
             Resultcontainers[run] = copy(container)
         else:
