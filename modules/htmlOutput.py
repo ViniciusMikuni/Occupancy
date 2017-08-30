@@ -39,7 +39,8 @@ def makeFiles(titlestring, generaldescription, containerlist, runlist, foldernam
         makeComparisonFiles(titlestring, generaldescription, containerlist, runlist, foldername,
                             htmltemplates = htmltemplatetuple, DFs = DFstopass, linkTeX = linkTeX, linkCSV = linkCSV, linkCFG = linkCFG)
     if makeIndex: #Make a landing page called index.html linking tables and plots (if passed as plottuples)
-        makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview, cfgname)
+        commentsite = makeRunCommentPage(titlestring, runlist, foldername, htmltemplatetuple, containerlist)
+        makeLandingPage(titlestring, runlist, foldername, htmltemplatetuple, makePlotOverview, cfgname, commentsite)
     if makePlotOverview:
         if plottuples is None:
             logging.error("No plotlists and names are given! No adding plots to index.")
@@ -307,10 +308,10 @@ def makePlotOverviewFile(titlestring, generaldescription, generatedplots, runlis
         modules.pandasOutput.writeListToFile(blocks, "{0}/plots_{1}_InnerOuterLadderRunComp.html".format(foldername, midfix.replace("/","per")))
         logging.info("Saved: {0}/plots_{1}_InnerOuterLadderRunComp.html".format(foldername, midfix.replace("/","per")))
 
-def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True, cfgname = None):
+def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenerated = True, cfgname = None, commentfile = None):
 
     header, style, footnote, footer = htmltemplates
-    title = "<h1>{0}</h1>\n Codebase and instructions on <a href=https://github.com/kschweiger/Occupancy>GitHub</a> <br> \nClick <a href={1}>here</a> to view the configuration file.".format(titlestring, cfgname)
+    title = "<h1>{0}</h1>\n Codebase and instructions on <a href=https://github.com/kschweiger/Occupancy>GitHub</a> <br> \nClick <a href={1}>here</a> to view the configuration file. <br><br>\nTo view comments for the different runs, click <a href={2}>here</a>.".format(titlestring, cfgname, commentfile)
     blocks = []
     blocks.append(header)
     blocks.append(style)
@@ -362,3 +363,18 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
     blocks.append(footnote)
     blocks.append(footer)
     modules.pandasOutput.writeListToFile(blocks, "{0}/index.html".format(foldername))
+
+def makeRunCommentPage(titlestring, runlist, foldername, htmltemplates, containerlist):
+    header, style, footnote, footer = htmltemplates
+    title = "<h1>{0}</h1>".format(titlestring)
+    blocks = []
+    blocks.append(header)
+    blocks.append(style)
+    blocks.append(title)
+    blocks.append("<h2> Run comments:</h2>\n")
+    commenttable = modules.pandasOutput.getcommentDF(containerlist, runlist).to_html()
+    blocks.append(commenttable)
+    blocks.append(footnote)
+    blocks.append(footer)
+    modules.pandasOutput.writeListToFile(blocks, "{0}/runcomments.html".format(foldername))
+    return "runcomments.html"

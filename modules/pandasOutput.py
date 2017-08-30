@@ -310,3 +310,20 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                 #                                                         "Z position", values[1], foldername = foldername, plottitle = layer))
 
     return generatedplots
+
+
+def getcommentDF(containerlist, runlist):
+    comments = []
+    nbunches = []
+    das = []
+    lumis = []
+    modrunlist = []
+    for run in runlist:
+        comments.append(containerlist[run].comments[2])
+        nbunches.append(containerlist[run].collBunches)
+        das.append(containerlist[run].comments[1])
+        lumis.append(containerlist[run].instLumi)
+        modrunlist.append("Run {0}".format(run))
+    df = pd.DataFrame({"Comment" :comments, "coll. bunches" : nbunches, "av. inst. lumi" : lumis, "Dataset" : das}, index=modrunlist)
+    #df.columns = ["Comment"]
+    return df
