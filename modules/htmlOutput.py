@@ -349,6 +349,7 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
         fullDetplotClusPerDetrefcomp = "Full detector: Plots for <a href=plots_ClusperDet_runComp.html#allLayers>all Layers</a>, <a href=plots_ClusperDet_runComp.html#Layer1>Layer 1</a>, <a href=plots_ClusperDet_runComp.html#Layer2>Layer 2</a>, <a href=plots_ClusperDet_runComp.html#Layer3>Layer 3</a>, <a href=plots_ClusperDet_runComp.html#Layer4>Layer 4</a> (calculated from <mark>clusters hit per det</mark>)<br>\n"
         Laddertablerefcompplots = "Comparison inner and outer ladder: Plots for <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer1>Layer 1</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer2>Layer 2</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer3>Layer 3</a>, <a href=plots_PixperLay_InnerVsOuterRunComp.html#Layer4>Layer 4</a> (calculated from <mark>pixels hit per layer</mark>)<br>\n"
         Laddertablerefcompplots2 = "Comparison inner and outer ladder: Plots for <a href=plots_PixperLay_InnerOuterLadderRunComp.html#inner>Inner modules</a>, <a href=plots_PixperLay_InnerOuterLadderRunComp.html#outer>Outer modules</a>(calculated from <mark>pixels hit per layer</mark>)<br>\n"
+    toOverviewfooter = "<br><br><hr>\nFor different run compositions click <a href=https://test-occupancy.web.cern.ch/test-occupancy/DivOverviews.html>here</a>\n"
     blocks.append(subheaderRunComp)
     blocks.append(fullDettablerefcomp)
     blocks.append(innerLaddertablerefcomp)
@@ -360,6 +361,7 @@ def makeLandingPage(titlestring, runlist, foldername, htmltemplates, plotsgenera
         blocks.append(fullDetplotClusPerDetrefcomp)
         blocks.append(Laddertablerefcompplots)
         blocks.append(Laddertablerefcompplots2)
+    blocks.append(toOverviewfooter)
     blocks.append(footnote)
     blocks.append(footer)
     modules.pandasOutput.writeListToFile(blocks, "{0}/index.html".format(foldername))

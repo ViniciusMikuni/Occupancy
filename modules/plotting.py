@@ -48,7 +48,7 @@ def makefolder(foldername):
 def get_colors():
     return plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle = "", foldername = None, isRunComp = True):
+def makeDiYAxisplot(df1in, df1yTitle, df2in, df2yTitle, filename = None, plottitle = "", foldername = None, isRunComp = True, normalizeDFs = False):
     """
     This functions makes plots with two curves that share a x-axis but have different y-axes for pandas series.
 
@@ -71,6 +71,11 @@ def makeDiYAxisplot(df1, df1yTitle, df2, df2yTitle, filename = None, plottitle =
 
     color1 = get_colors()[0]
     color2 = get_colors()[2]
+
+    df1 = df1in.copy()
+    df2 = df2in.copy()
+
+    #print df1
 
     df1.plot(ax = base, color = color1)
     df2.plot(ax = second, color = color2)

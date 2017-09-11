@@ -104,7 +104,7 @@ ENV/
 *.tex
 *.csv
 *.txt
-*.html
+*/*.html
 *.png
 *.pdf
 .DS_Store

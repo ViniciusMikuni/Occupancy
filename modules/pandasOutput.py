@@ -149,7 +149,7 @@ def makeInnerOuterLadderDetectorTables(containerlist, runlist, singlerun = False
 
     return runtables, runcomparisonperLayer
 
-def makeRunComparisonPlots(containerlist, runlist, foldername, group):
+def makeRunComparisonPlots(containerlist, runlist, foldername, group, details = False):
     if group not in ["Pix/Lay", "Pix/Det", "Clus/Lay", "Clus/Det"]:
         logging.error("Group *{0}* is not supported".format(group))
         generatedplots = None
@@ -210,6 +210,14 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                                                                    lumiperbx, r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
                                                                    "{0}_{2}_perAreaNorm_{1}".format(prefix, layer, group.replace("/","per")),
                                                                    layer, foldername))
+            generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'Hits per module area norm. to inst. luminosity per bunch',
+                                                                   runcompperlayer[layer][group]["nBunches"], r"Number of colliding bunches",
+                                                                   "{0}_{2}_perAreaNorm_nBX_{1}".format(prefix, layer, group.replace("/","per")),
+                                                                   layer, foldername))
+            generatedplots.append(modules.plotting.makeDiYAxisplot(normrate, 'Hits per module area norm. to inst. luminosity per bunch',
+                                                                   runcompperlayer[layer][group]["instLumi"], r'average inst. lumi [cm$^{-2}$s$^{-1}$]',
+                                                                   "{0}_{2}_perAreaNorm_Lumi_{1}".format(prefix, layer, group.replace("/","per")),
+                                                                   layer, foldername))
             generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["perAreaSec"],
                                                                    r'hit rate per active module area [cm$^{-2}$s$^{-1}$]',
                                                                    lumiperbx, r'Lumi/bx [cm$^{-2}$s$^{-1}$]',
@@ -237,6 +245,14 @@ def makeRunComparisonPlots(containerlist, runlist, foldername, group):
                     generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["occupancy"], r"Occupancy",
                                                                            lumiperbx, r'Inst. luminosity per coolliding bunch [cm$^{-2}$s$^{-1}$]',
                                                                            "{0}_{2}_Occupancy{1}".format(prefix, layer, group.replace("/","per")),
+                                                                           layer, foldername))
+                    generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["occupancy"], r"Occupancy",
+                                                                           runcompperlayer["Layer1"][group]["instLumi"], r"average inst. Lumi [cm$^{-2}$s$^{-1}$]",
+                                                                           "{0}_{2}_OccupancyVsLumi{1}".format(prefix, layer, group.replace("/","per")),
+                                                                           layer, foldername))
+                    generatedplots.append(modules.plotting.makeDiYAxisplot(runcompperlayer[layer][group]["occupancy"], r"Occupancy",
+                                                                            runcompperlayer["Layer1"][group]["nBunches"], "Number of colliding bunches",
+                                                                           "{0}_{2}_OccupancyVsnBx{1}".format(prefix, layer, group.replace("/","per")),
                                                                            layer, foldername))
                     generatedplots.append(modules.plotting.makecomparionPlot([runcompperlayer[layer][group]["occupancy"],
                                                                               runcompperlayer[layer][othergroup]["occupancy"]],
