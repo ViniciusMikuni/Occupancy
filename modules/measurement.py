@@ -82,7 +82,7 @@ def occupancyFromConfig(config, plotting = False):
     """
     Calculate occupancy and related values from a config defining files, nBunches,... . See README.md for detailed information.
 
-    Use https://github.com/cms-analysis/DPGAnalysis-SiPixelTools/tree/master/HitAnalyzer/test/PixClusterTest.* to preprocess the data samples.
+    Use https://github.com/cms-analysis/DPGAnalysis-SiPixelTools/tree/master/HitAnalyzer/test/PixClusterAna.* to preprocess the data samples.
     """
     from ConfigParser import SafeConfigParser
 
@@ -110,7 +110,12 @@ def occupancyFromConfig(config, plotting = False):
         collBunches = cfg.getfloat(run, "collidingBunches")
         instLumi =  cfg.getfloat(run, "lumi")
         fillnr =  cfg.getint(run, "fill")
-        comment = ["Colliding bunches: {0}".format(int(cfg.getfloat(run, "collidingBunches"))) ,cfg.get(run, "dataset"), cfg.get(run, "comment")]
+
+        comment = ["Colliding bunches: {0}".format(int(cfg.getfloat(run, "collidingBunches"))),
+                   cfg.get(run, "dataset"),
+                   cfg.get(run, "comment"),
+                   cfg.get(run, "scheme")]
+
         nFiles = cfg.getint(run, "nFiles")
 
         container = classes.container(run, inputfile, collBunches, instLumi, comment, nFiles, fillnr)

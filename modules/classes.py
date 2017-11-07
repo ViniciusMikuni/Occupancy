@@ -20,7 +20,7 @@ class container:
     Container initialized for a run containing all claculations for the occupancy
     and related values.
     """
-    def __init__(self, name, inputfile, collBunches, instLumi, comments = ["","",""], nFiles = 1, fill = 0):
+    def __init__(self, name, inputfile, collBunches, instLumi, comments = ["","","",""], nFiles = 1, fill = 0):
         logging.debug("Initializing container for {0} with inputfile {1} and colliding bunches {2}".format(name, inputfile, collBunches))
         self.LayerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
         self.zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
@@ -173,7 +173,7 @@ class container:
 
     def setzDependency(self):
         logging.info("Setting z-dependent values")
-        nhitpixelsperZ, nworkingModulesperZ = modules.zdep.npixZdependency(self.file)
+        nhitpixelsperZ, nworkingModulesperZ = modules.zdep.npixZdependency(self.file, self.nFiles)
         self.nWorkingModulesZ = nworkingModulesperZ
 
         for pos in self.zpositions:

@@ -10,3 +10,6 @@ def isHistoinFile(inputfile, histoname):
     if inputfile.Get(histoname) != None:
         isinFile = True
     return isinFile
+
+def isFalidFile(inputfile, type = "ROOT"):
+    pass

@@ -3,6 +3,8 @@ Module for all function related to the per ladder values
 """
 import logging
 
+from modules.tests import isHistoinFile
+
 def getLadderidList(layer, position = "inner"):
     """
     Function returns the ladder IDs for layer and position (inner or outer)
@@ -69,12 +71,18 @@ def getworkingladderModules(inputfile):
     facets = [12, 28, 44, 64]
     zbins = [1,2,3,4,6,7,8,9]
 
-    hpixdetMAPL1 = inputfile.Get("d/hpDetMap1")
-    hpixdetMAPL2 = inputfile.Get("d/hpDetMap2")
-    hpixdetMAPL3 = inputfile.Get("d/hpDetMap3")
-    hpixdetMAPL4 = inputfile.Get("d/hpDetMap4")
-
-    Histos2D = [hpixdetMAPL1, hpixdetMAPL2, hpixdetMAPL3, hpixdetMAPL4]
+    layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
+    Histos2D = []
+    for i in range(1,5):
+        if isHistoinFile(inputfile, "d/hpDetMap{0}".format(i)):
+            logging.debug("Using d/hpDetMap{0} for z dependent values".format(i))
+            Histos2D.append(inputfile.Get("d/hpDetMap{0}".format(i)))
+        elif isHistoinFile(inputfile, "d/hpixDets{0}".format(i)):
+            logging.debug("Using d/hpixDets{0} for z dependent values".format(i))
+            Histos2D.append(inputfile.Get("d/hpixDets{0}".format(i)))
+        else:
+            logging.error("Histo for Layer{0} d/hpDetMap{0} or d/hpixDets{0} not found. Final Fix not ready. Remove run from config!")
+            exit()
 
     workingmodules = {"Layer1": {}, "Layer2": {}, "Layer3": {}, "Layer4": {}}
 

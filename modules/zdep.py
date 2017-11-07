@@ -3,18 +3,25 @@ Module for all function related to the z dependent values
 """
 import logging
 
-def npixZdependency(inputfile):
+from modules.tests import isHistoinFile
+
+def npixZdependency(inputfile, nFiles = 1):
     logging.debug("Getting pixel per event per zpositions and working modules")
 
     facets = [12, 28, 44, 64]
     zpositions = ["-4", "-3", "-2", "-1", "1", "2", "3", "4"]
     layerNames = ["Layer1", "Layer2", "Layer3", "Layer4"]
-    hpixdetMAPL1 = inputfile.Get("d/hpDetMap1")
-    hpixdetMAPL2 = inputfile.Get("d/hpDetMap2")
-    hpixdetMAPL3 = inputfile.Get("d/hpDetMap3")
-    hpixdetMAPL4 = inputfile.Get("d/hpDetMap4")
-
-    Histos2D = [hpixdetMAPL1, hpixdetMAPL2, hpixdetMAPL3, hpixdetMAPL4]
+    Histos2D = []
+    for i in range(1,5):
+        if isHistoinFile(inputfile, "d/hpDetMap{0}".format(i)):
+            logging.debug("Using d/hpDetMap{0} for z dependent values".format(i))
+            Histos2D.append(inputfile.Get("d/hpDetMap{0}".format(i)))
+        elif isHistoinFile(inputfile, "d/hpixDets{0}".format(i)):
+            logging.debug("Using d/hpixDets{0} for z dependent values".format(i))
+            Histos2D.append(inputfile.Get("d/hpixDets{0}".format(i)))
+        else:
+            logging.error("Histo for Layer{0} d/hpDetMap{0} or d/hpixDets{0} not found. Final Fix not ready. Remove run from config!")
+            exit()
 
     phitperzpositions = {"Layer1": None, "Layer2": None, "Layer3": None, "Layer4": None}
     workingmodules = {"Layer1": None, "Layer2": None, "Layer3": None, "Layer4": None}
@@ -36,9 +43,11 @@ def npixZdependency(inputfile):
                 else:
                     x,y = 2,2
                 pixelperL += h2D.GetBinContent(x+il, y+iface) #h2D.GetBinContent(1,1) is lower left corner
+                #print h2D.GetBinContent(x+il, y+iface)
                 if h2D.GetBinContent(x+il, y+iface) > 0:
                     modulesworking += 1
-            zvalDict.update({l : pixelperL})
+            #print l,pixelperL
+            zvalDict.update({l : pixelperL / nFiles})
             zmoduleDict.update({l : modulesworking})
         phitperzpositions[layerNames[ih2D]] = zvalDict
         workingmodules[layerNames[ih2D]] = zmoduleDict
@@ -48,7 +57,7 @@ def npixZdependency(inputfile):
 def main():
     import ROOT
 
-    tfile = ROOT.TFile.Open("~/Code/data/pixel/occupancy/Run298653_v3.root")
+    tfile = ROOT.TFile.Open("~/Code/data/pixel/occupancy/v2/Run302742.root")
 
     hitpixelzdepDic, modules = npixZdependency(tfile)
     print hitpixelzdepDic

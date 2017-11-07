@@ -10,10 +10,13 @@ def modulecounter(inputfile):
     Histos2D = []
     for ilayer, layer in enumerate(lnames):
         currenthName = "d/hpDetMap{0}".format(ilayer+1)
+        currenthName2 = "d/hpixDets{0}".format(ilayer+1)
         if isHistoinFile(inputfile, currenthName):
             Histos2D.append(inputfile.Get(currenthName))
+        elif isHistoinFile(inputfile, currenthName2):
+            Histos2D.append(inputfile.Get(currenthName2))
         else:
-            logging.warning("Histo for {1} {0} not found. Will set modules to standard value!".format(currenthName,layer))
+            logging.warning("Histo for {1} {0} or {2} not found. Will set modules to standard value!".format(currenthName,layer,currenthName2))
             Histos2D.append(None)
 
     for ih2D, h2D in enumerate(Histos2D):
